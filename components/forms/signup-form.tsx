@@ -24,13 +24,13 @@ import {
 import { signUp } from "@/server/user"
 import { signupSchema, type SignupFormData } from "@/lib/validations"
 import { useRouter } from "next/navigation"
+import { toast } from "@/lib/toast"
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   const form = useForm<SignupFormData>({
@@ -45,18 +45,18 @@ export function SignupForm({
 
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true)
-    setError(null)
 
     try {
       const result = await signUp(data.email, data.password, data.name)
       
       if (result.success) {
+        toast.success("Account created successfully! Please sign in.")
         router.push("/login")
       } else {
-        setError(result.message)
+        toast.error(result.message)
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.")
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -89,12 +89,6 @@ export function SignupForm({
                     Or continue with
                   </span>
                 </div>
-                
-                {error && (
-                  <div className="text-sm text-red-500 bg-red-50 p-3 rounded-md">
-                    {error}
-                  </div>
-                )}
 
                 <div className="grid gap-6">
                   <FormField

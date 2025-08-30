@@ -24,13 +24,13 @@ import {
 import { signIn } from "@/server/user"
 import { loginSchema, type LoginFormData } from "@/lib/validations"
 import { useRouter } from "next/navigation"
+import { toast } from "@/lib/toast"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   const form = useForm<LoginFormData>({
@@ -43,18 +43,26 @@ export function LoginForm({
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
-    setError(null)
 
     try {
       const result = await signIn(data.email, data.password)
       
       if (result.success) {
-        router.push("/dashboard")
+        toast.success("Welcome back!")
+        
+        // Navigate first
+        router.push("/")
+        
+        // Then trigger auth state refresh with a slight delay to ensure session is set
+        setTimeout(() => {
+          window.dispatchEvent(new Event('authStateChange'))
+        }, 150) // Slightly longer delay for better session sync
       } else {
-        setError(result.message)
+        toast.error(result.message)
       }
-    } catch {
-      setError("An unexpected error occurred. Please try again.")
+    } catch (error) {
+      console.error("Login error:", error)
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -86,12 +94,6 @@ export function LoginForm({
                     Or continue with
                   </span>
                 </div>
-                
-                {error && (
-                  <div className="text-sm text-red-500 bg-red-50 p-3 rounded-md">
-                    {error}
-                  </div>
-                )}
 
                 <div className="grid gap-6">
                   <FormField
@@ -103,7 +105,7 @@ export function LoginForm({
                         <FormControl>
                           <Input
                             type="email"
-                            placeholder="m@example.com"
+                            placeholder="email@example.com"
                             {...field}
                           />
                         </FormControl>
@@ -129,6 +131,7 @@ export function LoginForm({
                         <FormControl>
                           <Input
                             type="password"
+                            placeholder="********"
                             {...field}
                           />
                         </FormControl>

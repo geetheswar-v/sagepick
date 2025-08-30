@@ -1,3 +1,5 @@
+import { Toaster } from "@/components/ui/sonner"
+import { Header } from "@/components/header"
 import { Josefin_Sans, Poppins } from "next/font/google";
 import "@/app/globals.css";
 
@@ -26,7 +28,9 @@ export default async function RootLayout({
       <body
         className={`${josefin.variable} ${poppins.variable} relative font-poppins antialiased`}
       >
+        <Header />
         {children}
+        <Toaster position="top-center" />
       </body>
     </html>
   );

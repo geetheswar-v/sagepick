@@ -5,10 +5,22 @@ import { nextCookies } from "better-auth/next-js";
 
 export const auth = betterAuth({
   emailAndPassword: {
-    enabled: true
+    enabled: true,
   },
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
   plugins: [nextCookies()],
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 60 * 24 * 7,
+    },
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
+  },
+  rateLimit: {
+    window: 60,
+    max: 30,
+  },
 });

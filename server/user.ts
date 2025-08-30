@@ -5,6 +5,22 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+export const requireAuth = async () => {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user) {
+      redirect("/login");
+    }
+
+    return session;
+  } catch {
+    redirect("/login");
+  }
+};
+
 export const getCurrentUser = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -14,9 +30,19 @@ export const getCurrentUser = async () => {
     redirect("/login");
   }
 
+  // Optimize database query - select only needed fields
   const currentUser = await prisma.user.findUnique({
     where: {
       id: session.user.id,
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      image: true,
+      createdAt: true,
+      updatedAt: true,
+      emailVerified: true,
     },
   });
 
