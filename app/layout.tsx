@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { Header } from "@/components/header"
 import { Josefin_Sans, Poppins } from "next/font/google";
 import "@/app/globals.css";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 
 const josefin = Josefin_Sans({
   variable: "--font-josefin",
@@ -28,9 +29,16 @@ export default async function RootLayout({
       <body
         className={`${josefin.variable} ${poppins.variable} relative font-poppins antialiased`}
       >
-        <Header />
-        {children}
-        <Toaster position="top-center" />
+        <ThemeProvider 
+          attribute="class" 
+          defaultTheme="system" 
+          enableSystem 
+          disableTransitionOnChange
+          >
+            <Header />
+            {children}
+            <Toaster position="top-center" />
+        </ThemeProvider>
       </body>
     </html>
   );

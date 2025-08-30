@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverItem } from "@/components/ui/popover";
 import { Avatar } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
@@ -74,6 +75,7 @@ export function Header() {
     if (authState === "unauthenticated") {
       return (
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Button variant="ghost" asChild>
             <Link href="/login">Login</Link>
           </Button>
@@ -86,49 +88,56 @@ export function Header() {
 
     if (authState === "authenticated") {
       return (
-        <Popover
-          trigger={
-            <Button 
-              variant="ghost" 
-              className="relative h-10 w-10 rounded-full p-0 flex items-center justify-center"
-            >
-              <Avatar 
-                src={user?.image}
-                name={user?.name}
-                alt={user?.name || "User"}
-                size={32}
-                className="border"
-              />
-            </Button>
-          }
-          content={
-            <div className="w-64">
-              <div className="flex items-center gap-3 p-4 border-b">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Popover
+            trigger={
+              <Button 
+                variant="ghost" 
+                className="relative h-10 w-10 rounded-full p-0 flex items-center justify-center"
+              >
                 <Avatar 
                   src={user?.image}
                   name={user?.name}
                   alt={user?.name || "User"}
-                  size={40}
+                  size={32}
                   className="border"
                 />
-                <div className="flex flex-col min-w-0 flex-1">
-                  <p className="text-sm font-medium truncate">{user?.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+              </Button>
+            }
+            content={
+              <div className="w-64">
+                <div className="flex items-center gap-3 p-4 border-b">
+                  <Avatar 
+                    src={user?.image}
+                    name={user?.name}
+                    alt={user?.name || "User"}
+                    size={40}
+                    className="border"
+                  />
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{user?.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                  </div>
+                </div>
+                <div className="p-1">
+                  <PopoverItem onClick={handleLogout} className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/50">
+                    Logout
+                  </PopoverItem>
                 </div>
               </div>
-              <div className="p-1">
-                <PopoverItem onClick={handleLogout} className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                  Logout
-                </PopoverItem>
-              </div>
-            </div>
-          }
-          align="end"
-        />
+            }
+            align="end"
+          />
+        </div>
       );
     }
 
-    return null;
+    return (
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+      </div>
+    );
   };
 
   return (
