@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverItem } from "@/components/ui/popover";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
@@ -17,6 +17,12 @@ interface User {
   email: string;
   image?: string | null;
 }
+
+const navigationItems = [
+  { href: "/", label: "Home" },
+  { href: "/movies", label: "Movies" },
+  { href: "/search", label: "Search" },
+];
 
 export function Header() {
   const [authState, setAuthState] = useState<AuthState>("loading");
@@ -67,7 +73,7 @@ export function Header() {
   const renderAuthSection = () => {
     if (authState === "unauthenticated") {
       return (
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Button variant="ghost" asChild>
             <Link href="/login">Login</Link>
           </Button>
@@ -79,40 +85,42 @@ export function Header() {
     }
 
     if (authState === "authenticated") {
-      // authenticated state
       return (
         <Popover
           trigger={
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
-              <Avatar className="h-8 w-8">
-                <AvatarImage
-                  src={user?.image || ""}
-                  alt={user?.name || "User"}
-                />
-                <AvatarFallback name={user?.name}>
-                  U
-                </AvatarFallback>
-              </Avatar>
+            <Button 
+              variant="ghost" 
+              className="relative h-10 w-10 rounded-full p-0 flex items-center justify-center"
+            >
+              <Avatar 
+                src={user?.image}
+                name={user?.name}
+                alt={user?.name || "User"}
+                size={32}
+                className="border"
+              />
             </Button>
           }
           content={
-            <div className="w-56">
-              <div className="flex items-center space-x-2 p-3 border-b">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage
-                    src={user?.image || ""}
-                    alt={user?.name || "User"}
-                  />
-                  <AvatarFallback name={user?.name} />
-                </Avatar>
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">{user?.name}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+            <div className="w-64">
+              <div className="flex items-center gap-3 p-4 border-b">
+                <Avatar 
+                  src={user?.image}
+                  name={user?.name}
+                  alt={user?.name || "User"}
+                  size={40}
+                  className="border"
+                />
+                <div className="flex flex-col min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                 </div>
               </div>
-              <PopoverItem onClick={handleLogout}>
-                Logout
-              </PopoverItem>
+              <div className="p-1">
+                <PopoverItem onClick={handleLogout} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                  Logout
+                </PopoverItem>
+              </div>
             </div>
           }
           align="end"
@@ -125,33 +133,27 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-14 items-center">
-        <div className="mr-4 flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
+      <div className="container mx-auto flex h-14 items-center justify-between">
+        {/* Left side - Logo and Navigation */}
+        <div className="flex items-center gap-6">
+          <Link href="/" className="flex items-center gap-2">
             <span className="font-bold text-xl">SagePick</span>
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link
-              href="/"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Home
-            </Link>
-            <Link
-              href="/movies"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Movies
-            </Link>
-            <Link
-              href="/search"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Search
-            </Link>
+          <nav className="hidden md:flex items-center gap-6">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-sm font-medium transition-colors hover:text-foreground text-foreground/60"
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
         </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+
+        {/* Right side - Auth Section */}
+        <div className="flex items-center">
           {renderAuthSection()}
         </div>
       </div>
