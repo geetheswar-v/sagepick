@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverItem } from "@/components/ui/popover";
 import { Avatar } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 

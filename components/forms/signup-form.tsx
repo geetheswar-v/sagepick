@@ -25,7 +25,7 @@ import { signUp } from "@/server/user"
 import { signupSchema, type SignupFormData } from "@/lib/validations"
 import { useRouter } from "next/navigation"
 import { toast } from "@/lib/toast"
-import { authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 
 export function SignupForm({
   className,
