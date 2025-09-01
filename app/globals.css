@@ -138,3 +138,46 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .landscape-optimized {
+    @media (orientation: landscape) and (max-height: 500px) {
+      height: 140vh;
+      height: 140dvh;
+    }
+  }
+  
+  .mobile-landscape-content {
+    @media (orientation: landscape) and (max-height: 500px) {
+      padding-bottom: 4rem;
+    }
+  }
+  
+  .mobile-landscape-title {
+    @media (orientation: landscape) and (max-height: 500px) {
+      font-size: 1.25rem;
+      line-height: 1.75rem;
+    }
+  }
+  
+  .mobile-landscape-hide {
+    @media (orientation: landscape) and (max-height: 500px) {
+      display: none;
+    }
+  }
+  
+  .mobile-landscape-indicators {
+    @media (orientation: landscape) and (max-height: 500px) {
+      display: flex;
+    }
+    @media not ((orientation: landscape) and (max-height: 500px)) {
+      display: none;
+    }
+  }
+  
+  .mobile-landscape-hide-indicators {
+    @media (orientation: landscape) and (max-height: 500px) {
+      display: none;
+    }
+  }
+}

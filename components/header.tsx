@@ -74,12 +74,12 @@ export function Header() {
   const renderAuthSection = () => {
     if (authState === "unauthenticated") {
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:gap-3">
           <ThemeToggle />
-          <Button variant="ghost" asChild>
+          <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground hover:bg-muted text-sm px-3 sm:px-4">
             <Link href="/login">Login</Link>
           </Button>
-          <Button asChild>
+          <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm px-3 sm:px-4">
             <Link href="/signup">Sign Up</Link>
           </Button>
         </div>
@@ -88,40 +88,40 @@ export function Header() {
 
     if (authState === "authenticated") {
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:gap-3">
           <ThemeToggle />
           <Popover
             trigger={
               <Button 
                 variant="ghost" 
-                className="relative h-10 w-10 rounded-full p-0 flex items-center justify-center"
+                className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full p-0 flex items-center justify-center hover:bg-muted"
               >
                 <Avatar 
                   src={user?.image}
                   name={user?.name}
                   alt={user?.name || "User"}
                   size={32}
-                  className="border"
+                  className="border-2 border-border w-7 h-7 sm:w-8 sm:h-8"
                 />
               </Button>
             }
             content={
               <div className="w-64">
-                <div className="flex items-center gap-3 p-4 border-b">
+                <div className="flex items-center gap-3 p-4 border-b border-border">
                   <Avatar 
                     src={user?.image}
                     name={user?.name}
                     alt={user?.name || "User"}
                     size={40}
-                    className="border"
+                    className="border border-border"
                   />
                   <div className="flex flex-col min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{user?.name}</p>
+                    <p className="text-sm font-medium truncate text-foreground">{user?.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                   </div>
                 </div>
                 <div className="p-1">
-                  <PopoverItem onClick={handleLogout} className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/50">
+                  <PopoverItem onClick={handleLogout} className="text-destructive hover:text-destructive hover:bg-destructive/10">
                     Logout
                   </PopoverItem>
                 </div>
@@ -134,26 +134,26 @@ export function Header() {
     }
 
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 sm:gap-3">
         <ThemeToggle />
       </div>
     );
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-14 items-center justify-between">
+    <header className="fixed top-0 z-50 w-full transition-all duration-300">
+      <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
         {/* Left side - Logo and Navigation */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 sm:gap-8">
           <Link href="/" className="flex items-center gap-2">
-            <span className="font-bold text-xl">SagePick</span>
+            <span className="font-bold text-xl sm:text-2xl text-primary">SagePick</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             {navigationItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm font-medium transition-colors hover:text-foreground text-foreground/60"
+                className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
               >
                 {item.label}
               </Link>

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/sonner"
 import { Header } from "@/components/header"
 import { Josefin_Sans, Poppins } from "next/font/google";
@@ -17,6 +18,11 @@ const poppins = Poppins({
   weight: ["300", "400", "500"],
   display: "swap",
 });
+
+export const metadata: Metadata = {
+  title: "SagePick - Discover Movies & TV Shows",
+  description: "Discover trending movies, popular TV shows, and the latest releases.",
+};
 
 export default async function RootLayout({
   children,

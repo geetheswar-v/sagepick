@@ -43,14 +43,16 @@ export interface TMDBResponse<T> {
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
-if (!process.env.TMDB_BEARER_TOKEN) {
-  throw new Error("TMDB_BEARER_TOKEN is not set in environment variables");
+function getHeaders() {
+  const token = process.env.TMDB_BEARER_TOKEN;
+  if (!token) {
+    throw new Error("TMDB_BEARER_TOKEN is not set in environment variables");
+  }
+  return {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
 }
-
-const headers = {
-  Authorization: `Bearer ${process.env.TMDB_BEARER_TOKEN}`,
-  "Content-Type": "application/json",
-};
 
 export const getImageUrl = (
   path: string | null,
@@ -65,8 +67,8 @@ async function fetchTMDB<T>(endpoint: string): Promise<T> {
 
   try {
     const response = await fetch(url, {
-      headers,
-      next: { revalidate: 3600 },
+      headers: getHeaders(),
+      next: { revalidate: 3600 }, // Cache for 1 hour
     });
 
     if (!response.ok) {
