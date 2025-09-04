@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/sonner"
-import { Header } from "@/components/header"
+import { SiteHeader } from "@/components/layout/header"
 import { Josefin_Sans, Poppins } from "next/font/google";
 import "@/app/globals.css";
 import { ThemeProvider } from "@/components/theme/theme-provider";
@@ -41,7 +41,7 @@ export default async function RootLayout({
           enableSystem 
           disableTransitionOnChange
           >
-            <Header />
+            <SiteHeader />
             {children}
             <Toaster position="top-center" />
         </ThemeProvider>

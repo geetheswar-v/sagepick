@@ -62,13 +62,16 @@ export const getImageUrl = (
   return `${TMDB_IMAGE_BASE_URL}/${size}${path}`;
 };
 
-async function fetchTMDB<T>(endpoint: string): Promise<T> {
+async function fetchTMDB<T>(
+  endpoint: string,
+  cacheTime: number = 21600
+): Promise<T> {
   const url = `${TMDB_BASE_URL}${endpoint}`;
 
   try {
     const response = await fetch(url, {
       headers: getHeaders(),
-      next: { revalidate: 3600 }, // Cache for 1 hour
+      next: { revalidate: cacheTime }, // Dynamic cache time
     });
 
     if (!response.ok) {
@@ -86,28 +89,40 @@ async function fetchTMDB<T>(endpoint: string): Promise<T> {
 
 // API Functions
 
-// Trending Movies (by day)
+// Trending Movies (by day) - Cache for 6 hours
 export async function getTrendingMovies(): Promise<Movie[]> {
-  const response = await fetchTMDB<TMDBResponse<Movie>>("/trending/movie/day");
+  const response = await fetchTMDB<TMDBResponse<Movie>>(
+    "/trending/movie/day",
+    21600
+  );
   return response.results.slice(0, 10);
 }
 
-// 2. Popular Movies
+// 2. Popular Movies - Cache for 6 hours
 export async function getPopularMovies(): Promise<Movie[]> {
-  const response = await fetchTMDB<TMDBResponse<Movie>>("/movie/popular");
-  return response.results.slice(0, 10);
+  const response = await fetchTMDB<TMDBResponse<Movie>>(
+    "/movie/popular",
+    21600
+  );
+  return response.results.slice(0, 20);
 }
 
-// 3. Movies in Theaters (Now Playing)
+// 3. Movies in Theaters (Now Playing) - Cache for 2 hours (more dynamic)
 export async function getMoviesInTheaters(): Promise<Movie[]> {
-  const response = await fetchTMDB<TMDBResponse<Movie>>("/movie/now_playing");
-  return response.results.slice(0, 10);
+  const response = await fetchTMDB<TMDBResponse<Movie>>(
+    "/movie/now_playing",
+    7200
+  );
+  return response.results.slice(0, 20);
 }
 
-// 4. Trending TV Shows (by day)
+// 4. Trending TV Shows (by day) - Cache for 6 hours
 export async function getTrendingTVShows(): Promise<TVShow[]> {
-  const response = await fetchTMDB<TMDBResponse<TVShow>>("/trending/tv/day");
-  return response.results.slice(0, 10);
+  const response = await fetchTMDB<TMDBResponse<TVShow>>(
+    "/trending/tv/day",
+    21600
+  );
+  return response.results.slice(0, 20);
 }
 
 // Get movie details by ID

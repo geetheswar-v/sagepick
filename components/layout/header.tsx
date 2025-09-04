@@ -25,9 +25,10 @@ const navigationItems = [
   { href: "/search", label: "Search" },
 ];
 
-export function Header() {
+export function SiteHeader() {
   const [authState, setAuthState] = useState<AuthState>("loading");
   const [user, setUser] = useState<User | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
 
   const checkAuthOptimized = async () => {
@@ -56,6 +57,17 @@ export function Header() {
     return () => {
       window.removeEventListener("authStateChange", handleAuthChange);
     };
+  }, []);
+
+  // Handle scroll for header background
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleLogout = async () => {
@@ -141,7 +153,11 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-0 z-50 w-full transition-all duration-300">
+    <header className={`fixed top-0 z-50 w-full transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-background/80 backdrop-blur-md border-b border-border/40' 
+        : 'bg-transparent'
+    }`}>
       <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
         {/* Left side - Logo and Navigation */}
         <div className="flex items-center gap-4 sm:gap-8">
