@@ -9,7 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: default
+    environment: Default
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,8 +23,12 @@ jobs:
       - name: Install dependencies
         run: npm install
         env:
-          NEXT_PUBLIC_API_URL: ${{ vars.BETTER_AUTH_URL_DEV }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL_DEV }}
+          NEXT_PUBLIC_API_URL: ${{ vars.BETTER_AUTH_URL_DEV }}
+          AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
+          AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
+          TMDB_BEARER_TOKEN: ${{ secrets.TMDB_BEARER_TOKEN }}
 
       - name: Build project
         run: npm run build
