@@ -24,4 +24,4 @@ jobs:
         run: npm install --global vercel
 
       - name: Direct Deploy to Vercel
-        run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        run: vercel --target=preview --token=${{ secrets.VERCEL_TOKEN }} --yes
