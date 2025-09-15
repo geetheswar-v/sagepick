@@ -24,22 +24,21 @@ jobs:
         run: npm install --global vercel
 
       - name: Pull Vercel Project Information
-        # run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
 
       # Directly using github env vars rather than setting up in vercel project settings
       - name: Build Project Artifacts
-        # env:
-        #   DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        #   BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-        #   BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL }}
-        #   BETTER_AUTH_SESSION_CACHE: ${{ vars.BETTER_AUTH_SESSION_CACHE }}
-        #   BETTER_AUTH_RATE_LIMIT: ${{ vars.BETTER_AUTH_RATE_LIMIT }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+          BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL }}
+          BETTER_AUTH_SESSION_CACHE: ${{ vars.BETTER_AUTH_SESSION_CACHE }}
+          BETTER_AUTH_RATE_LIMIT: ${{ vars.BETTER_AUTH_RATE_LIMIT }}
 
-        #   AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
-        #   AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
+          AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
+          AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
 
-        #   TMDB_BEARER_TOKEN: ${{ secrets.TMDB_BEARER_TOKEN }}
+          TMDB_BEARER_TOKEN: ${{ secrets.TMDB_BEARER_TOKEN }}
 
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
