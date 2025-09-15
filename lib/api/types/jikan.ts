@@ -168,17 +168,18 @@ export interface AnimeSearchParams extends PaginationParams {
   unapproved?: boolean;
 }
 
-// Simplified anime item for frontend display
 export interface AnimeItem {
   id: number;
   title: string; // Always English, fallback to title
   synopsis: string;
   alt_titles: string[]; // All synonyms and their own language titles
   score_by_mal: number;
-  cover: string; // large_jpg or large_webp
-  type: string;
+  cover_image: string; // large_jpg or large_webp
+  backdrop_image: string;
+  anime_type: string; // TV, ONA, Special, Movie, etc.
   episodes?: number;
   genres: string[];
+  tags: string[]; // Themes and demographics combined
   year?: number;
   status: string;
   rating: string;
@@ -186,4 +187,7 @@ export interface AnimeItem {
   studios: string[];
   season?: string;
   airing: boolean;
+  airing_from?: string; // Start date
+  airing_to?: string; // End date
+  adult: boolean; // Based on rating (R+/Rx = adult)
 }

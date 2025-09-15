@@ -68,7 +68,7 @@ export class MangaDexApiClient {
       );
     }
 
-    // Handle originalLanguage array parameter - IMPORTANT FIX
+    // Handle originalLanguage array parameters
     if (params.originalLanguage) {
       params.originalLanguage.forEach((lang) =>
         searchParams.append("originalLanguage[]", lang)
@@ -109,29 +109,68 @@ export class MangaDexApiClient {
       return Object.values(obj)[0] || "";
     };
 
+    // Extract all alternative titles
+    const altTitles: string[] = [];
+
+    const mainTitle =
+      manga.attributes.title.en || getFirstString(manga.attributes.title);
+    Object.values(manga.attributes.title).forEach((title) => {
+      if (title !== mainTitle && !altTitles.includes(title)) {
+        altTitles.push(title);
+      }
+    });
+
+    // Add titles from altTitles array
+    manga.attributes.altTitles.forEach((titleObj) => {
+      Object.values(titleObj).forEach((title) => {
+        if (title !== mainTitle && !altTitles.includes(title)) {
+          altTitles.push(title);
+        }
+      });
+    });
+
+    // Separate genres and tags based on tag group
+    const genres: string[] = [];
+    const tags: string[] = [];
+
+    manga.attributes.tags.forEach((tag) => {
+      const tagName =
+        tag.attributes.name.en ||
+        getFirstString(tag.attributes.name) ||
+        "Unknown Tag";
+      if (tag.attributes.group === "genre") {
+        genres.push(tagName);
+      } else {
+        tags.push(tagName);
+      }
+    });
+
+    // Determine if adult based on content rating
+    const isAdult =
+      manga.attributes.contentRating === "erotica" ||
+      manga.attributes.contentRating === "pornographic";
+
+    const coverImg = this.extractCoverImage(manga);
+
     return {
       id: manga.id,
-      title:
-        manga.attributes.title.en ||
-        getFirstString(manga.attributes.title) ||
-        "Unknown Title",
-      description:
+      title: mainTitle || "Unknown Title",
+      alt_titles: altTitles,
+      synopsis:
         manga.attributes.description.en ||
         getFirstString(manga.attributes.description) ||
         "",
-      coverImage: this.extractCoverImage(manga),
-      tags: manga.attributes.tags.map(
-        (tag) =>
-          tag.attributes.name.en ||
-          getFirstString(tag.attributes.name) ||
-          "Unknown Tag"
-      ),
+      cover_image: coverImg,
+      backdrop_image: coverImg,
+      genres: genres,
+      tags: tags,
       status: manga.attributes.status,
       year: manga.attributes.year,
-      contentRating: manga.attributes.contentRating,
-      publicationDemographic: manga.attributes.publicationDemographic,
-      lastChapter: manga.attributes.lastChapter,
-      lastVolume: manga.attributes.lastVolume,
+      rating: manga.attributes.contentRating,
+      publication_demographic: manga.attributes.publicationDemographic,
+      last_chapter: manga.attributes.lastChapter,
+      last_volume: manga.attributes.lastVolume,
+      adult: isAdult,
     };
   }
 
@@ -301,8 +340,6 @@ export class MangaDexApiClient {
     const response = await this.client.get<{ data: Tag[] }>("/manga/tag");
     return response.data;
   }
-
-  // Additional helper methods for better separation
 
   // Get recent popular manga by language with time filter
   async getRecentPopularByLanguage(

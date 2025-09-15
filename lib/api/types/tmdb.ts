@@ -162,8 +162,8 @@ export interface MovieItem {
   alt_titles: string[]; // Original title, translated titles
   synopsis: string;
   score_by_imdb: number; // vote_average from TMDB
-  cover: string; // Poster image URL
-  backdrop: string; // Backdrop image URL
+  cover_image: string; // Poster image URL
+  backdrop_image: string; // Backdrop image URL
   status: string;
   year: number;
   genres: string[]; // Genre names resolved from genre_ids
@@ -180,8 +180,8 @@ export interface TVItem {
   alt_titles: string[]; // Original name, translated names
   synopsis: string;
   score_by_imdb: number; // vote_average from TMDB
-  cover: string; // Poster image URL
-  backdrop: string; // Backdrop image URL
+  cover_image: string; // Poster image URL
+  backdrop_image: string; // Backdrop image URL
   status: string;
   first_air_year: number;
   last_air_year?: number;
@@ -191,6 +191,6 @@ export interface TVItem {
   countries: string[];
   languages: string[];
   popularity: number;
-  type: string; // Documentary, Reality, etc.
+  show_type: string; // Documentary, Reality, etc.
   adult: boolean;
 }

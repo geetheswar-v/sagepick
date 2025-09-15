@@ -62,17 +62,33 @@ export class JikanAnimeApiClient {
       }
     });
 
+    // Combine themes and demographics into tags
+    const tags: string[] = [];
+    anime.themes.forEach((theme) => tags.push(theme.name));
+    anime.demographics.forEach((demo) => tags.push(demo.name));
+
+    // Determine if adult based on rating (R+, Rx)
+    const isAdult =
+      anime.rating &&
+      (anime.rating.includes("R+") || anime.rating.includes("Rx"));
+
+    const coverImage =
+      anime.images.jpg.large_image_url ||
+      anime.images.webp.large_image_url ||
+      "";
+
     return {
       id: anime.mal_id,
       title: anime.title_english || anime.title, // Always English, fallback to title
       synopsis: anime.synopsis || "",
       alt_titles: altTitles,
       score_by_mal: anime.score || 0,
-      cover:
-        anime.images.jpg.large_image_url || anime.images.webp.large_image_url,
-      type: anime.type,
+      cover_image: coverImage,
+      backdrop_image: coverImage, // Fallback to cover since Jikan doesn't have backdrop
+      anime_type: anime.type,
       episodes: anime.episodes,
       genres: anime.genres.map((genre) => genre.name),
+      tags: tags,
       year: anime.year,
       status: anime.status,
       rating: anime.rating,
@@ -80,6 +96,9 @@ export class JikanAnimeApiClient {
       studios: anime.studios.map((studio) => studio.name),
       season: anime.season,
       airing: anime.airing,
+      airing_from: anime.aired.from || undefined,
+      airing_to: anime.aired.to || undefined,
+      adult: !!isAdult,
     };
   }
 
@@ -193,9 +212,7 @@ export class JikanAnimeApiClient {
   }
 
   // 7. Advanced Search with Pagination
-  async searchAnime(
-    searchParams: AnimeSearchParams
-  ): Promise<{
+  async searchAnime(searchParams: AnimeSearchParams): Promise<{
     items: AnimeItem[];
     pagination: { current_page: number; has_next_page: boolean; total: number };
   }> {

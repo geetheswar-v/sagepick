@@ -1,4 +1,3 @@
-// Base interfaces
 export interface PaginationParams {
   limit?: number;
   offset?: number;
@@ -122,17 +121,20 @@ export interface SearchParams extends PaginationParams {
   group?: string;
 }
 
-// Simplified manga item for frontend display
 export interface MangaItem {
   id: string;
   title: string;
-  description: string;
-  coverImage?: string;
+  alt_titles: string[];
+  synopsis: string;
+  cover_image?: string;
+  backdrop_image?: string;
+  genres: string[];
   tags: string[];
   status: string;
   year?: number;
-  contentRating: string;
-  publicationDemographic?: string;
-  lastChapter?: string;
-  lastVolume?: string;
+  rating: string;
+  publication_demographic?: string;
+  last_chapter?: string;
+  last_volume?: string;
+  adult: boolean; // Based on rating (erotica/pornographic = adult)
 }

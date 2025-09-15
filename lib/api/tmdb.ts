@@ -95,18 +95,20 @@ export class TmdbApiClient {
     // Resolve genres using our mapper
     const genres = await this.resolveGenres(movie.genre_ids, movie.genres);
 
+    const coverImage = movie.poster_path
+      ? `${this.IMAGE_BASE_URL}${movie.poster_path}`
+      : "";
+
     return {
       id: movie.id,
       title: movie.title, // TMDB returns localized title based on language param
       alt_titles: altTitles,
       synopsis: movie.overview || "",
       score_by_imdb: movie.vote_average,
-      cover: movie.poster_path
-        ? `${this.IMAGE_BASE_URL}${movie.poster_path}`
-        : "",
-      backdrop: movie.backdrop_path
+      cover_image: coverImage,
+      backdrop_image: movie.backdrop_path
         ? `${this.IMAGE_BASE_URL}${movie.backdrop_path}`
-        : "",
+        : coverImage, // Fallback to cover if no backdrop
       status: movie.status || "Unknown",
       year: new Date(movie.release_date || "").getFullYear() || 0,
       genres: genres,
@@ -128,18 +130,20 @@ export class TmdbApiClient {
     // Resolve genres using our mapper
     const genres = await this.resolveGenres(show.genre_ids, show.genres);
 
+    const coverImage = show.poster_path
+      ? `${this.IMAGE_BASE_URL}${show.poster_path}`
+      : "";
+
     return {
       id: show.id,
       title: show.name, // TMDB returns localized name based on language param
       alt_titles: altTitles,
       synopsis: show.overview || "",
       score_by_imdb: show.vote_average,
-      cover: show.poster_path
-        ? `${this.IMAGE_BASE_URL}${show.poster_path}`
-        : "",
-      backdrop: show.backdrop_path
+      cover_image: coverImage,
+      backdrop_image: show.backdrop_path
         ? `${this.IMAGE_BASE_URL}${show.backdrop_path}`
-        : "",
+        : coverImage, // Fallback to cover image
       status: show.status || "Unknown",
       first_air_year: new Date(show.first_air_date || "").getFullYear() || 0,
       last_air_year: show.last_air_date
@@ -152,7 +156,7 @@ export class TmdbApiClient {
         show.production_countries?.map((country) => country.name) || [],
       languages: show.spoken_languages?.map((lang) => lang.english_name) || [],
       popularity: show.popularity,
-      type: show.type || "Unknown",
+      show_type: show.type || "Unknown",
       adult: show.adult,
     };
   }
@@ -514,47 +518,5 @@ export class TmdbApiClient {
       `/tv/${id}?language=en-US`
     );
     return await this.transformTVShow(response);
-  }
-
-  // Get movies by multiple countries (Asian movies)
-  async getAsianMovies(params: PaginationParams = {}): Promise<MovieItem[]> {
-    const searchParams: MovieSearchParams = {
-      page: params.page || 1,
-      with_origin_country: "KR,JP,CN,TH,IN", // Multiple Asian countries
-      sort_by: "popularity.desc",
-    };
-
-    const queryParams = this.buildQueryParams({
-      ...searchParams,
-      language: "en-US",
-    });
-
-    const response = await this.client.get<TMDBResponse<TMDBMovie>>(
-      `/discover/movie?${queryParams.toString()}`
-    );
-    return Promise.all(
-      response.results.map((movie) => this.transformMovie(movie))
-    );
-  }
-
-  // Get all Asian dramas
-  async getAsianDramas(params: PaginationParams = {}): Promise<TVItem[]> {
-    const searchParams: TVSearchParams = {
-      page: params.page || 1,
-      with_origin_country: "KR,JP,CN,TH,IN", // Multiple Asian countries
-      sort_by: "popularity.desc",
-    };
-
-    const queryParams = this.buildQueryParams({
-      ...searchParams,
-      language: "en-US",
-    });
-
-    const response = await this.client.get<TMDBResponse<TMDBTVShow>>(
-      `/discover/tv?${queryParams.toString()}`
-    );
-    return Promise.all(
-      response.results.map((show) => this.transformTVShow(show))
-    );
   }
 }

@@ -8,15 +8,16 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String            @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean           @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @default(now()) @updatedAt
   sessions      Session[]
   accounts      Account[]
+  mediaRatings  UserMediaRating[] // User's ratings and watchlist
 
   @@unique([email])
   @@map("user")
@@ -65,4 +66,164 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+model Media {
+  id             String       @id @default(cuid())
+  title          String
+  alt_titles     String[]     @default([])
+  synopsis       String?
+  type           MediaType
+  provider_id    String
+  provider_type  ProviderType
+  cover_image    String?
+  backdrop_image String?
+  status         String?
+  year           Int?
+  score          Float?       @default(0)
+  genres         String[]     @default([])
+  tags           String[]     @default([])
+  countries      String[]     @default([])
+  languages      String[]     @default([])
+  adult          Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // Relations
+  categories  MediaCategory[]
+  movieData   MovieData?
+  tvData      TVData?
+  animeData   AnimeData?
+  mangaData   MangaData?
+  userRatings UserMediaRating[]
+
+  @@unique([provider_id, provider_type])
+  @@index([type])
+  @@index([provider_type])
+  @@index([score])
+  @@index([year])
+  @@map("media")
+}
+
+// Movie-specific data (TMDB)
+model MovieData {
+  media_id     String  @id
+  runtime      Int?
+  revenue      BigInt?
+  budget       BigInt?
+  popularity   Float?
+  release_date String?
+
+  // Relations
+  media Media @relation(fields: [media_id], references: [id], onDelete: Cascade)
+
+  @@map("movie_data")
+}
+
+// TV Series specific data (TMDB)
+model TVData {
+  media_id      String  @id
+  episode_count Int?
+  season_count  Int?
+  last_air_date String?
+  popularity    Float?
+  network       String?
+  show_type     String? // Documentary, Reality, Scripted, etc.
+
+  // Relations
+  media Media @relation(fields: [media_id], references: [id], onDelete: Cascade)
+
+  @@map("tv_data")
+}
+
+// Anime-specific data (Jikan)
+model AnimeData {
+  media_id    String   @id
+  anime_type  String? // TV, ONA, Special, Movie, etc
+  episodes    Int?
+  duration    String?
+  season      String?
+  airing      Boolean? @default(false)
+  airing_from String? // Start date
+  airing_to   String? // End date
+  studios     String[] @default([])
+  rating      String? // Age rating (G, PG, PG-13, R, R+, Rx)
+
+  // Relations
+  media Media @relation(fields: [media_id], references: [id], onDelete: Cascade)
+
+  @@map("anime_data")
+}
+
+// Manga-specific data (MangaDex)
+model MangaData {
+  media_id                String  @id
+  last_chapter            String?
+  last_volume             String?
+  rating                  String? // Content rating (safe, suggestive, erotica, pornographic)
+  publication_demographic String? // Publication demographic (shounen, seinen, shoujo, josei, none)
+
+  // Relations
+  media Media @relation(fields: [media_id], references: [id], onDelete: Cascade)
+
+  @@map("manga_data")
+}
+
+// User rating system for recommendation data
+model UserMediaRating {
+  id        String       @id @default(cuid())
+  user_id   String
+  media_id  String
+  rating    Float // User's personal rating (1-10)
+  status    WatchStatus? // watching, completed, dropped, etc
+  progress  Int? // Episodes watched, chapters read
+  notes     String? // Personal notes
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  // Relations
+  user  User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [media_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, media_id]) // One rating per user per media
+  @@index([user_id])
+  @@index([media_id])
+  @@index([rating])
+  @@map("user_media_rating")
+}
+
+model MediaCategory {
+  media_id       String @id @default(cuid()) // Keep ID for composite scenarios
+  category_title String // "Trending Movies", "Top K-Dramas", "Popular Web Series"
+  position       Int // Position within that category
+
+  // Relations
+  media Media @relation(fields: [media_id], references: [id], onDelete: Cascade)
+
+  @@unique([media_id, category_title]) // One media per category title
+  @@index([category_title, position]) 
+  @@map("media_category")
+}
+
+// Enums
+enum MediaType {
+  MOVIE
+  TV
+  ANIME
+  MANGA
+}
+
+enum ProviderType {
+  TMDB
+  JIKAN
+  MANGADX
+}
+
+enum WatchStatus {
+  PLANNING // Want to watch/read
+  CURRENT // Currently watching/reading  
+  COMPLETED // Finished
+  PAUSED // On hold
+  DROPPED // Abandoned
+  REWATCHING // Watching again
 }
