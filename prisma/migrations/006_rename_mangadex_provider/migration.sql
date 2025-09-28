@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "ProviderType" RENAME VALUE 'MANGADX' TO 'MANGADEX';

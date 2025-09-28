@@ -79,10 +79,14 @@ export class JikanAnimeApiClient {
 
     return {
       id: anime.mal_id,
+      providerId: anime.mal_id.toString(),
+      mediaType: "ANIME",
+      providerType: "JIKAN",
       title: anime.title_english || anime.title, // Always English, fallback to title
       synopsis: anime.synopsis || "",
       alt_titles: altTitles,
       score_by_mal: anime.score || 0,
+      score: anime.score || 0,
       cover_image: coverImage,
       backdrop_image: coverImage, // Fallback to cover since Jikan doesn't have backdrop
       anime_type: anime.type,
@@ -98,6 +102,8 @@ export class JikanAnimeApiClient {
       airing: anime.airing,
       airing_from: anime.aired.from || undefined,
       airing_to: anime.aired.to || undefined,
+      popularity: anime.popularity,
+      members: anime.members,
       adult: !!isAdult,
     };
   }
@@ -284,6 +290,32 @@ export class JikanAnimeApiClient {
     if (month >= 5 && month <= 7) return "summer";
     if (month >= 8 && month <= 10) return "fall";
     return "winter";
+  }
+
+  // Get next season
+  private getNextSeason(): {
+    year: number;
+    season: "spring" | "summer" | "fall" | "winter";
+  } {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    if (currentMonth >= 2 && currentMonth <= 4)
+      return { year: currentYear, season: "summer" };
+    if (currentMonth >= 5 && currentMonth <= 7)
+      return { year: currentYear, season: "fall" };
+    if (currentMonth >= 8 && currentMonth <= 10)
+      return { year: currentYear, season: "winter" };
+    return { year: currentYear + 1, season: "spring" };
+  }
+
+  // Get next season anime
+  async getNextSeasonAnime(
+    params: PaginationParams = {}
+  ): Promise<AnimeItem[]> {
+    const { year, season } = this.getNextSeason();
+    return this.getSeasonalAnime(year, season, params);
   }
 
   // Get anime by specific ID

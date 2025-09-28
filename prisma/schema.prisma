@@ -91,8 +91,6 @@ model Media {
 
   // Relations
   categories  MediaCategory[]
-  movieData   MovieData?
-  tvData      TVData?
   animeData   AnimeData?
   mangaData   MangaData?
   userRatings UserMediaRating[]
@@ -103,37 +101,6 @@ model Media {
   @@index([score])
   @@index([year])
   @@map("media")
-}
-
-// Movie-specific data (TMDB)
-model MovieData {
-  media_id     String  @id
-  runtime      Int?
-  revenue      BigInt?
-  budget       BigInt?
-  popularity   Float?
-  release_date String?
-
-  // Relations
-  media Media @relation(fields: [media_id], references: [id], onDelete: Cascade)
-
-  @@map("movie_data")
-}
-
-// TV Series specific data (TMDB)
-model TVData {
-  media_id      String  @id
-  episode_count Int?
-  season_count  Int?
-  last_air_date String?
-  popularity    Float?
-  network       String?
-  show_type     String? // Documentary, Reality, Scripted, etc.
-
-  // Relations
-  media Media @relation(fields: [media_id], references: [id], onDelete: Cascade)
-
-  @@map("tv_data")
 }
 
 // Anime-specific data (Jikan)
@@ -175,7 +142,7 @@ model UserMediaRating {
   user_id   String
   media_id  String
   rating    Float // User's personal rating (1-10)
-  status    WatchStatus? // watching, completed, dropped, etc
+  status    MediaStatus? // watching, completed, dropped, etc
   progress  Int? // Episodes watched, chapters read
   notes     String? // Personal notes
   createdAt DateTime     @default(now())
@@ -193,16 +160,68 @@ model UserMediaRating {
 }
 
 model MediaCategory {
-  media_id       String @id @default(cuid()) // Keep ID for composite scenarios
+  id             String   @id @default(cuid())
+  media_id       String
   category_title String // "Trending Movies", "Top K-Dramas", "Popular Web Series"
   position       Int // Position within that category
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relations
   media Media @relation(fields: [media_id], references: [id], onDelete: Cascade)
 
   @@unique([media_id, category_title]) // One media per category title
-  @@index([category_title, position]) 
+  @@index([category_title, position])
+  @@index([category_title, createdAt])
   @@map("media_category")
+}
+
+// Job tracking for sync operations
+model SyncJob {
+  id          String        @id @default(cuid())
+  jobType     SyncJobType
+  status      SyncJobStatus @default(RUNNING)
+  startedAt   DateTime      @default(now())
+  completedAt DateTime?
+  errorMsg    String?
+  itemsTotal  Int?          @default(0)
+  itemsSync   Int?          @default(0)
+  metadata    Json? // Additional job-specific data
+
+  logs SyncLog[]
+
+  @@index([jobType, startedAt])
+  @@index([status])
+  @@map("sync_job")
+}
+
+// Detailed logging for sync operations
+model SyncLog {
+  id        String   @id @default(cuid())
+  jobId     String
+  level     LogLevel @default(INFO)
+  message   String
+  details   Json?
+  createdAt DateTime @default(now())
+
+  job SyncJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId, createdAt])
+  @@index([level])
+  @@map("sync_log")
+}
+
+// Track hourly sync state for pagination
+model SyncState {
+  id            String   @id @default(cuid())
+  syncType      String   @unique // "sync-movies", "sync-tv", "sync-anime", "sync-manga"
+  currentPage   Int      @default(1)
+  currentOffset Int      @default(0)
+  totalItems    Int      @default(0)
+  lastRun       DateTime @updatedAt
+  metadata      Json?
+
+  @@map("sync_state")
 }
 
 // Enums
@@ -216,14 +235,48 @@ enum MediaType {
 enum ProviderType {
   TMDB
   JIKAN
-  MANGADX
+  MANGADEX
 }
 
-enum WatchStatus {
+enum MediaStatus {
   PLANNING // Want to watch/read
-  CURRENT // Currently watching/reading  
+
+  WATCHING // Currently watching
+  READING // Currently reading
+
   COMPLETED // Finished
   PAUSED // On hold
   DROPPED // Abandoned
+
   REWATCHING // Watching again
+  REREADING // Reading again
+}
+
+enum SyncJobType {
+  // Category Jobs
+  TRENDING_SYNC
+  POPULAR_SYNC
+  TOP_RATED_SYNC
+  DRAMAS_SYNC
+  UPCOMING_SYNC
+
+  // Hourly Full Sync Jobs  
+  MOVIES_SYNC
+  TV_SYNC
+  ANIME_SYNC
+  MANGA_SYNC
+}
+
+enum SyncJobStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
 }

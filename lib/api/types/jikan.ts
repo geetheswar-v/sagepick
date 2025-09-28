@@ -170,10 +170,14 @@ export interface AnimeSearchParams extends PaginationParams {
 
 export interface AnimeItem {
   id: number;
+  providerId: string; // MAL id normalized as string
+  mediaType: "ANIME";
+  providerType: "JIKAN";
   title: string; // Always English, fallback to title
   synopsis: string;
   alt_titles: string[]; // All synonyms and their own language titles
   score_by_mal: number;
+  score: number; // Normalized score value for media table
   cover_image: string; // large_jpg or large_webp
   backdrop_image: string;
   anime_type: string; // TV, ONA, Special, Movie, etc.
@@ -189,5 +193,7 @@ export interface AnimeItem {
   airing: boolean;
   airing_from?: string; // Start date
   airing_to?: string; // End date
+  popularity?: number;
+  members?: number;
   adult: boolean; // Based on rating (R+/Rx = adult)
 }

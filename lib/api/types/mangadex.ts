@@ -123,6 +123,9 @@ export interface SearchParams extends PaginationParams {
 
 export interface MangaItem {
   id: string;
+  providerId: string; // MangaDex id (already string)
+  mediaType: "MANGA";
+  providerType: "MANGADEX";
   title: string;
   alt_titles: string[];
   synopsis: string;
@@ -136,5 +139,23 @@ export interface MangaItem {
   publication_demographic?: string;
   last_chapter?: string;
   last_volume?: string;
+  score?: number;
   adult: boolean; // Based on rating (erotica/pornographic = adult)
+}
+
+export interface MangaStatisticsRating {
+  average?: number;
+  bayesian?: number;
+  distribution?: Record<string, number>;
+}
+
+export interface MangaStatisticsEntry {
+  follows?: number;
+  rating?: MangaStatisticsRating;
+  comments?: Record<string, unknown>;
+}
+
+export interface MangaStatisticsResponse {
+  result: string;
+  statistics: Record<string, MangaStatisticsEntry>;
 }
