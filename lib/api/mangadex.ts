@@ -7,11 +7,13 @@ import {
   MangaResponse,
   Tag,
   CoverArtRelationship,
+  MangaStatisticsResponse,
 } from "./types/mangadex";
 
 export class MangaDexApiClient {
   private readonly client: ApiClient;
   private readonly COVER_BASE_URL = "https://uploads.mangadex.org/covers";
+  private readonly statisticsCache = new Map<string, number | undefined>();
 
   constructor() {
     this.client = new ApiClient({ baseUrl: "https://api.mangadex.org" });
@@ -103,7 +105,7 @@ export class MangaDexApiClient {
     return undefined;
   }
 
-  private transformManga(manga: Manga): MangaItem {
+  private transformManga(manga: Manga, score?: number): MangaItem {
     // Helper function to get the first available string from title/description object
     const getFirstString = (obj: { [language: string]: string }): string => {
       return Object.values(obj)[0] || "";
@@ -154,6 +156,9 @@ export class MangaDexApiClient {
 
     return {
       id: manga.id,
+      providerId: manga.id,
+      mediaType: "MANGA",
+      providerType: "MANGADEX",
       title: mainTitle || "Unknown Title",
       alt_titles: altTitles,
       synopsis:
@@ -170,8 +175,72 @@ export class MangaDexApiClient {
       publication_demographic: manga.attributes.publicationDemographic,
       last_chapter: manga.attributes.lastChapter,
       last_volume: manga.attributes.lastVolume,
+      score,
       adult: isAdult,
     };
+  }
+
+  private normalizeScore(value?: number): number | undefined {
+    if (typeof value !== "number" || Number.isNaN(value)) {
+      return undefined;
+    }
+
+    return Math.round(value * 100) / 100;
+  }
+
+  private async getScoresForManga(
+    mangaList: Manga[]
+  ): Promise<Map<string, number | undefined>> {
+    const results = new Map<string, number | undefined>();
+    const pending = new Set<string>();
+
+    for (const manga of mangaList) {
+      if (this.statisticsCache.has(manga.id)) {
+        results.set(manga.id, this.statisticsCache.get(manga.id));
+      } else {
+        pending.add(manga.id);
+      }
+    }
+
+    const idsToFetch = Array.from(pending);
+    if (idsToFetch.length > 0) {
+      try {
+        let endpoint: string;
+        if (idsToFetch.length === 1) {
+          endpoint = `/statistics/manga/${idsToFetch[0]}`;
+        } else {
+          const statsParams = new URLSearchParams();
+          idsToFetch.forEach((id) => statsParams.append("manga[]", id));
+          endpoint = `/statistics/manga?${statsParams.toString()}`;
+        }
+
+        const response = await this.client.get<MangaStatisticsResponse>(
+          endpoint
+        );
+
+        idsToFetch.forEach((id) => {
+          const entry = response.statistics[id];
+          const rawScore =
+            entry?.rating?.bayesian ?? entry?.rating?.average ?? undefined;
+          const normalized = this.normalizeScore(rawScore);
+          this.statisticsCache.set(id, normalized);
+          results.set(id, normalized);
+        });
+      } catch {
+        idsToFetch.forEach((id) => {
+          this.statisticsCache.set(id, undefined);
+          results.set(id, undefined);
+        });
+      }
+    }
+
+    for (const manga of mangaList) {
+      if (!results.has(manga.id)) {
+        results.set(manga.id, this.statisticsCache.get(manga.id));
+      }
+    }
+
+    return results;
   }
 
   // 1. Popular Manga (Japanese only)
@@ -190,7 +259,10 @@ export class MangaDexApiClient {
     const response = await this.client.get<MangaResponse>(
       `/manga?${queryParams.toString()}`
     );
-    return response.data.map((manga) => this.transformManga(manga));
+    const scoreMap = await this.getScoresForManga(response.data);
+    return response.data.map((manga) =>
+      this.transformManga(manga, scoreMap.get(manga.id))
+    );
   }
 
   // 2. Popular Manhwa (Korean only)
@@ -209,7 +281,10 @@ export class MangaDexApiClient {
     const response = await this.client.get<MangaResponse>(
       `/manga?${queryParams.toString()}`
     );
-    return response.data.map((manga) => this.transformManga(manga));
+    const scoreMap = await this.getScoresForManga(response.data);
+    return response.data.map((manga) =>
+      this.transformManga(manga, scoreMap.get(manga.id))
+    );
   }
 
   // 3. Popular Manhua (Chinese only)
@@ -228,7 +303,10 @@ export class MangaDexApiClient {
     const response = await this.client.get<MangaResponse>(
       `/manga?${queryParams.toString()}`
     );
-    return response.data.map((manga) => this.transformManga(manga));
+    const scoreMap = await this.getScoresForManga(response.data);
+    return response.data.map((manga) =>
+      this.transformManga(manga, scoreMap.get(manga.id))
+    );
   }
 
   // 4. Trending (Recently Updated - All languages)
@@ -246,7 +324,10 @@ export class MangaDexApiClient {
     const response = await this.client.get<MangaResponse>(
       `/manga?${queryParams.toString()}`
     );
-    return response.data.map((manga) => this.transformManga(manga));
+    const scoreMap = await this.getScoresForManga(response.data);
+    return response.data.map((manga) =>
+      this.transformManga(manga, scoreMap.get(manga.id))
+    );
   }
 
   // 5. Highly Followed Manga (Since no rating parameter exists)
@@ -267,7 +348,10 @@ export class MangaDexApiClient {
     const response = await this.client.get<MangaResponse>(
       `/manga?${queryParams.toString()}`
     );
-    return response.data.map((manga) => this.transformManga(manga));
+    const scoreMap = await this.getScoresForManga(response.data);
+    return response.data.map((manga) =>
+      this.transformManga(manga, scoreMap.get(manga.id))
+    );
   }
 
   // 6. Highly Followed Manhwa
@@ -286,7 +370,10 @@ export class MangaDexApiClient {
     const response = await this.client.get<MangaResponse>(
       `/manga?${queryParams.toString()}`
     );
-    return response.data.map((manga) => this.transformManga(manga));
+    const scoreMap = await this.getScoresForManga(response.data);
+    return response.data.map((manga) =>
+      this.transformManga(manga, scoreMap.get(manga.id))
+    );
   }
 
   // 7. Highly Followed Manhua
@@ -305,7 +392,10 @@ export class MangaDexApiClient {
     const response = await this.client.get<MangaResponse>(
       `/manga?${queryParams.toString()}`
     );
-    return response.data.map((manga) => this.transformManga(manga));
+    const scoreMap = await this.getScoresForManga(response.data);
+    return response.data.map((manga) =>
+      this.transformManga(manga, scoreMap.get(manga.id))
+    );
   }
 
   // 8. Advanced Search with Pagination
@@ -325,9 +415,12 @@ export class MangaDexApiClient {
     const response = await this.client.get<MangaResponse>(
       `/manga?${queryParams.toString()}`
     );
+    const scoreMap = await this.getScoresForManga(response.data);
 
     return {
-      items: response.data.map((manga) => this.transformManga(manga)),
+      items: response.data.map((manga) =>
+        this.transformManga(manga, scoreMap.get(manga.id))
+      ),
       total: response.total,
       hasMore:
         (defaultParams.offset || 0) + (defaultParams.limit || 20) <
@@ -364,6 +457,9 @@ export class MangaDexApiClient {
     const response = await this.client.get<MangaResponse>(
       `/manga?${queryParams.toString()}`
     );
-    return response.data.map((manga) => this.transformManga(manga));
+    const scoreMap = await this.getScoresForManga(response.data);
+    return response.data.map((manga) =>
+      this.transformManga(manga, scoreMap.get(manga.id))
+    );
   }
 }

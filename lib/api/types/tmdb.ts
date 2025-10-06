@@ -158,16 +158,19 @@ export interface TVSearchParams extends PaginationParams {
 
 export interface MovieItem {
   id: number;
+  providerId: string; // TMDB id normalized as string
+  mediaType: "MOVIE";
+  providerType: "TMDB";
   title: string; // English title or original title
   alt_titles: string[]; // Original title, translated titles
   synopsis: string;
   score_by_imdb: number; // vote_average from TMDB
+  score: number; // Normalized score value for media table
   cover_image: string; // Poster image URL
   backdrop_image: string; // Backdrop image URL
   status: string;
   year: number;
   genres: string[]; // Genre names resolved from genre_ids
-  runtime?: number;
   countries: string[];
   languages: string[];
   popularity: number;
@@ -176,21 +179,21 @@ export interface MovieItem {
 
 export interface TVItem {
   id: number;
+  providerId: string; // TMDB id normalized as string
+  mediaType: "TV";
+  providerType: "TMDB";
   title: string; // English name or original name
   alt_titles: string[]; // Original name, translated names
   synopsis: string;
   score_by_imdb: number; // vote_average from TMDB
+  score: number; // Normalized score value for media table
   cover_image: string; // Poster image URL
   backdrop_image: string; // Backdrop image URL
   status: string;
   first_air_year: number;
-  last_air_year?: number;
   genres: string[]; // Genre names resolved from genre_ids
-  episode_count: number;
-  season_count: number;
   countries: string[];
   languages: string[];
   popularity: number;
-  show_type: string; // Documentary, Reality, etc.
   adult: boolean;
 }

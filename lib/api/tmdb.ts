@@ -101,10 +101,14 @@ export class TmdbApiClient {
 
     return {
       id: movie.id,
+      providerId: movie.id.toString(),
+      mediaType: "MOVIE",
+      providerType: "TMDB",
       title: movie.title, // TMDB returns localized title based on language param
       alt_titles: altTitles,
       synopsis: movie.overview || "",
       score_by_imdb: movie.vote_average,
+      score: movie.vote_average,
       cover_image: coverImage,
       backdrop_image: movie.backdrop_path
         ? `${this.IMAGE_BASE_URL}${movie.backdrop_path}`
@@ -112,7 +116,6 @@ export class TmdbApiClient {
       status: movie.status || "Unknown",
       year: new Date(movie.release_date || "").getFullYear() || 0,
       genres: genres,
-      runtime: movie.runtime,
       countries:
         movie.production_countries?.map((country) => country.name) || [],
       languages: movie.spoken_languages?.map((lang) => lang.english_name) || [],
@@ -136,27 +139,25 @@ export class TmdbApiClient {
 
     return {
       id: show.id,
+      providerId: show.id.toString(),
+      mediaType: "TV",
+      providerType: "TMDB",
       title: show.name, // TMDB returns localized name based on language param
       alt_titles: altTitles,
       synopsis: show.overview || "",
       score_by_imdb: show.vote_average,
+      score: show.vote_average,
       cover_image: coverImage,
       backdrop_image: show.backdrop_path
         ? `${this.IMAGE_BASE_URL}${show.backdrop_path}`
         : coverImage, // Fallback to cover image
       status: show.status || "Unknown",
       first_air_year: new Date(show.first_air_date || "").getFullYear() || 0,
-      last_air_year: show.last_air_date
-        ? new Date(show.last_air_date).getFullYear()
-        : undefined,
       genres: genres,
-      episode_count: show.number_of_episodes || 0,
-      season_count: show.number_of_seasons || 0,
       countries:
         show.production_countries?.map((country) => country.name) || [],
       languages: show.spoken_languages?.map((lang) => lang.english_name) || [],
       popularity: show.popularity,
-      show_type: show.type || "Unknown",
       adult: show.adult,
     };
   }
@@ -217,6 +218,23 @@ export class TmdbApiClient {
 
     const response = await this.client.get<TMDBResponse<TMDBMovie>>(
       `/movie/upcoming?${queryParams.toString()}`
+    );
+    return Promise.all(
+      response.results.map((movie) => this.transformMovie(movie))
+    );
+  }
+
+  // 4.1. Now Playing Movies (In Theaters)
+  async getNowPlayingMovies(
+    params: PaginationParams = {}
+  ): Promise<MovieItem[]> {
+    const queryParams = this.buildQueryParams({
+      page: params.page || 1,
+      language: "en-US",
+    });
+
+    const response = await this.client.get<TMDBResponse<TMDBMovie>>(
+      `/movie/now_playing?${queryParams.toString()}`
     );
     return Promise.all(
       response.results.map((movie) => this.transformMovie(movie))
