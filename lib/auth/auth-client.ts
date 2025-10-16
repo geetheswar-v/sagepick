@@ -2,7 +2,7 @@ import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
   baseURL:
-    process.env.BETTER_AUTH_URL || "https://sagepick.vercel.app",
+    process.env.BETTER_AUTH_URL || "https://sagepick.in",
   fetchOptions: {
     credentials: "include",
   },
