@@ -2,16 +2,62 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "../prisma";
 import { nextCookies } from "better-auth/next-js";
+import { sendEmail } from "../email";
+
+const appName = process.env.NEXT_PUBLIC_APP_NAME || "SagePick";
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL || "https://sagepick.in",
+  baseURL: process.env.NEXT_PUBLIC_APP_URL,
   trustedOrigins: [
-    "http://localhost:3000",
+    process.env.NEXT_PUBLIC_APP_URL || "https://www.sagepick.in",
     "https://sagepick.in",
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
   ],
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
+    minPasswordLength: 8,
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: `${appName} password reset instructions`,
+        text: `Hi ${
+          user.name || "there"
+        },\n\nWe received a request to reset your ${appName} password.\n\nOpen the link below to set a new password. The link expires in one hour.\n${url}\n\nIf you did not request a password reset, you can safely ignore this email.\n\nThanks,\n${appName} Support`,
+        html:
+          `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;line-height:1.5;color:#1f2937;">` +
+          `<p>Hi ${user.name || "there"},</p>` +
+          `<p>We received a request to reset your ${appName} password.</p>` +
+          `<p><a href="${url}" style="display:inline-block;padding:12px 18px;background-color:#2563eb;color:#ffffff;text-decoration:none;border-radius:6px;">Reset password</a></p>` +
+          `<p>This link expires in one hour. If you did not request a reset, you can safely ignore this email.</p>` +
+          `<p>Thanks,<br/>${appName} Support</p>` +
+          `<p style="font-size:12px;color:#6b7280;">If the button above does not work, copy and paste this URL into your browser:<br/><a href="${url}">${url}</a></p>` +
+          `</body></html>`,
+      });
+    },
+  },
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: `Verify your ${appName} email address`,
+        text: `Hi ${
+          user.name || "there"
+        },\n\nWelcome to ${appName}! Please confirm your email address by opening the link below.\n${url}\n\nIf you did not create this account, you can ignore this message.`,
+        html:
+          `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;line-height:1.5;color:#1f2937;">` +
+          `<p>Hi ${user.name || "there"},</p>` +
+          `<p>Welcome to ${appName}! Please confirm your email address to activate your account.</p>` +
+          `<p><a href="${url}" style="display:inline-block;padding:12px 18px;background-color:#2563eb;color:#ffffff;text-decoration:none;border-radius:6px;">Verify email</a></p>` +
+          `<p>If you did not create this account, you can ignore this message.</p>` +
+          `<p>Thanks,<br/>${appName} Support</p>` +
+          `<p style="font-size:12px;color:#6b7280;">If the button above does not work, copy and paste this URL into your browser:<br/><a href="${url}">${url}</a></p>` +
+          `</body></html>`,
+      });
+    },
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    autoSignInAfterVerification: true,
   },
   socialProviders: {
     google: {

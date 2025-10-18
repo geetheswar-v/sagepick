@@ -6,10 +6,11 @@ export async function middleware(request: NextRequest) {
 
   const isAuthRoute =
     request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/signup");
+    request.nextUrl.pathname.startsWith("/signup") ||
+    request.nextUrl.pathname.startsWith("/forgot-password") ||
+    request.nextUrl.pathname.startsWith("/reset-password");
 
-  const isProtectedRoute =
-    request.nextUrl.pathname.startsWith("/profile");
+  const isProtectedRoute = request.nextUrl.pathname.startsWith("/profile");
 
   if (isProtectedRoute && !sessionCookie) {
     return NextResponse.redirect(new URL("/login", request.url));
@@ -23,5 +24,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/signup", "/profile/:path*"],
+  matcher: [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/profile/:path*",
+  ],
 };

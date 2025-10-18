@@ -78,10 +78,13 @@ export const signIn = async (email: string, password: string) => {
       };
     }
   } catch (error) {
-    const e = error as Error;
+    const e = error as Error & { message?: string };
+    const message = e.message || "Invalid email or password.";
     return {
       success: false,
-      message: e.message || "Invalid email or password.",
+      message: /verify/i.test(message)
+        ? "Please verify your email address before signing in. We just sent you a fresh verification email."
+        : message,
     };
   }
 };
@@ -97,6 +100,7 @@ export const signUp = async (
         email,
         password,
         name: username,
+        callbackURL: "/login",
       },
       headers: await headers(),
     });
@@ -104,7 +108,8 @@ export const signUp = async (
     if (response) {
       return {
         success: true,
-        message: "Account created successfully.",
+        message:
+          "Account created! We sent a verification link to your inbox. Please verify your email before signing in.",
       };
     } else {
       return {
@@ -113,7 +118,7 @@ export const signUp = async (
       };
     }
   } catch (error) {
-    const e = error as Error;
+    const e = error as Error & { message?: string };
     return {
       success: false,
       message: e.message || "An error occurred while creating the account.",

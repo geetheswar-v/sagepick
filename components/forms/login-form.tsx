@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/form"
 import { signIn } from "@/server/user"
 import { loginSchema, type LoginFormData } from "@/lib/validations"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "@/lib/toast"
 import { authClient } from "@/lib/auth/auth-client"
@@ -134,12 +135,12 @@ export function LoginForm({
                       <FormItem>
                         <div className="flex items-center">
                           <FormLabel>Password</FormLabel>
-                          <a
-                            href="#"
+                          <Link
+                            href="/forgot-password"
                             className="ml-auto text-sm underline-offset-4 hover:underline"
                           >
                             Forgot your password?
-                          </a>
+                          </Link>
                         </div>
                         <FormControl>
                           <Input
