@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverItem } from "@/components/ui/popover";
 import { Avatar } from "@/components/ui/avatar";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { authClient } from "@/lib/auth/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
@@ -33,14 +32,18 @@ export function SiteHeader() {
 
   const checkAuthOptimized = async () => {
     try {
-      const { data: session } = await authClient.getSession();
+      const { data: session, error } = await authClient.getSession();
+      console.log('Session check:', { session, error }); // Debug log
       if (session?.user) {
         setUser(session.user);
         setAuthState("authenticated");
       } else {
+        setUser(null);
         setAuthState("unauthenticated");
       }
-    } catch {
+    } catch (error) {
+      console.error('Session check error:', error); // Debug log
+      setUser(null);
       setAuthState("unauthenticated");
     }
   };
@@ -87,7 +90,6 @@ export function SiteHeader() {
     if (authState === "unauthenticated") {
       return (
         <div className="flex items-center gap-2 sm:gap-3">
-          <ThemeToggle />
           <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground hover:bg-muted text-sm px-3 sm:px-4">
             <Link href="/login">Login</Link>
           </Button>
@@ -101,7 +103,6 @@ export function SiteHeader() {
     if (authState === "authenticated") {
       return (
         <div className="flex items-center gap-2 sm:gap-3">
-          <ThemeToggle />
           <Popover
             trigger={
               <Button 
@@ -145,11 +146,7 @@ export function SiteHeader() {
       );
     }
 
-    return (
-      <div className="flex items-center gap-2 sm:gap-3">
-        <ThemeToggle />
-      </div>
-    );
+    return null;
   };
 
   return (
