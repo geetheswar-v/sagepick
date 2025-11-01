@@ -8,15 +8,18 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String            @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean           @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @default(now()) @updatedAt
   sessions      Session[]
   accounts      Account[]
+  ratings       UserMovieRating[]
+  watchlists    UserWatchlist[]
+  favorites     UserFavorite[]
 
   @@unique([email])
   @@map("user")
@@ -65,4 +68,73 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+// User-Movie Relationship Models
+// Movie data is stored in Core Service, we only store relationships
+
+enum WatchlistStatus {
+  PLAN_TO_WATCH
+  WATCHING
+  COMPLETED
+  ON_HOLD
+  DROPPED
+}
+
+model UserMovieRating {
+  id     Int    @id @default(autoincrement())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // TMDB ID from Core Service
+  tmdbId Int
+
+  rating    Float // Rating from 0-10 (or 1-5, we can scale it)
+  review    String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, tmdbId])
+  @@index([userId])
+  @@index([tmdbId])
+  @@index([rating])
+  @@map("user_movie_rating")
+}
+
+model UserWatchlist {
+  id     Int    @id @default(autoincrement())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // TMDB ID from Core Service
+  tmdbId Int
+
+  status    WatchlistStatus @default(PLAN_TO_WATCH)
+  progress  Int? // For tracking episodes/rewatches
+  notes     String?         @db.Text
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@unique([userId, tmdbId])
+  @@index([userId])
+  @@index([tmdbId])
+  @@index([status])
+  @@index([userId, status])
+  @@map("user_watchlist")
+}
+
+model UserFavorite {
+  id     Int    @id @default(autoincrement())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // TMDB ID from Core Service
+  tmdbId Int
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tmdbId])
+  @@index([userId])
+  @@index([tmdbId])
+  @@map("user_favorite")
 }
