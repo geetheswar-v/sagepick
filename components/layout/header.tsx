@@ -20,8 +20,8 @@ interface User {
 
 const navigationItems = [
   { href: "/", label: "Home" },
-  { href: "/movies", label: "Movies" },
-  { href: "/search", label: "Search" },
+  { href: "/watchlist", label: "Watchlist" },
+  { href: "/favorites", label: "Favorites" },
 ];
 
 export function SiteHeader() {
