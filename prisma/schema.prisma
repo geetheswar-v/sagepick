@@ -20,6 +20,7 @@ model User {
   ratings       UserMovieRating[]
   watchlists    UserWatchlist[]
   favorites     UserFavorite[]
+  preference    UserPreference?
 
   @@unique([email])
   @@map("user")
@@ -137,4 +138,35 @@ model UserFavorite {
   @@index([userId])
   @@index([tmdbId])
   @@map("user_favorite")
+}
+
+// User Preferences for Cold Start Problem
+enum ReleaseYearRange {
+  MODERN // 2015-present
+  RECENT // 2005-2014
+  CLASSIC // 1990-2004
+  RETRO // Before 1990
+  ALL // No preference
+}
+
+model UserPreference {
+  id     Int    @id @default(autoincrement())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Core preferences
+  genreIds          Int[] // Array of genre IDs from Core Service
+  languages         String[] // ISO language codes: ['en', 'hi', 'te', 'es']
+  releaseYearRanges ReleaseYearRange[] // Multiple ranges can be selected
+
+  // Optional preferences
+  keywords String[] // Free-form tags/themes (e.g., "superhero", "space", "time-travel")
+
+  // Metadata
+  completedOnboarding Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([userId])
+  @@map("user_preference")
 }

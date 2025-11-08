@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth/auth';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getUserWatchlist } from '@/server/movie';
+import { hasCompletedOnboarding } from '@/server/user';
 import { getMovieByTmdbId } from '@/lib/services/movie-service';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MovieCard, MovieCardSkeleton } from '@/components/movie/movie-card';
@@ -63,6 +64,12 @@ export default async function WatchlistPage() {
 
   if (!session?.user) {
     redirect('/login');
+  }
+
+  // Check onboarding status
+  const { completed } = await hasCompletedOnboarding();
+  if (!completed) {
+    redirect('/onboarding');
   }
 
   return (

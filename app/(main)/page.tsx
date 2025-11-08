@@ -1,8 +1,10 @@
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { HeroCarousel } from '@/components/movie/hero-carousel';
 import { MovieCategoryCarousel } from '@/components/movie/movie-category-carousel';
 import { auth } from '@/lib/auth/auth';
 import { getUserFavorites } from '@/server/movie';
+import { hasCompletedOnboarding } from '@/server/user';
 import {
   getCategories,
   getMoviesByCategory,
@@ -20,6 +22,14 @@ export default async function HomePage() {
     headers: await headers(),
   });
   const isAuthenticated = !!session?.user;
+
+  // Check onboarding status for authenticated users
+  if (isAuthenticated) {
+    const { completed } = await hasCompletedOnboarding();
+    if (!completed) {
+      redirect('/onboarding');
+    }
+  }
   
   // Fetch favorites if authenticated
   const favoritesData = isAuthenticated 
