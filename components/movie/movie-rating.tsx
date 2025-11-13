@@ -19,11 +19,11 @@ import { rateMovie, deleteRating } from '@/server/movie';
 import type { UserMovieRating } from '@/lib/types/movie';
 
 interface MovieRatingProps {
-  tmdbId: number;
+  movieId: number;
   initialRating?: UserMovieRating | null;
 }
 
-export function MovieRating({ tmdbId, initialRating }: MovieRatingProps) {
+export function MovieRating({ movieId, initialRating }: MovieRatingProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [rating, setRating] = useState<number>(initialRating?.rating || 5);
   const [review, setReview] = useState(initialRating?.review || '');
@@ -34,7 +34,7 @@ export function MovieRating({ tmdbId, initialRating }: MovieRatingProps) {
     setIsSubmitting(true);
     
     try {
-      const result = await rateMovie(tmdbId, rating, review || undefined);
+      const result = await rateMovie(movieId, rating, review || undefined);
       
       if (result.success) {
         toast.success('Rating submitted successfully!');
@@ -54,7 +54,7 @@ export function MovieRating({ tmdbId, initialRating }: MovieRatingProps) {
     setIsSubmitting(true);
     
     try {
-      const result = await deleteRating(tmdbId);
+      const result = await deleteRating(movieId);
       
       if (result.success) {
         toast.success('Rating removed successfully!');

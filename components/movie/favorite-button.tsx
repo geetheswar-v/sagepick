@@ -8,11 +8,11 @@ import { addToFavorites, removeFromFavorites } from '@/server/movie';
 import { cn } from '@/lib/utils';
 
 interface FavoriteButtonProps {
-  tmdbId: number;
+  movieId: number;
   initialIsFavorite?: boolean;
 }
 
-export function FavoriteButton({ tmdbId, initialIsFavorite = false }: FavoriteButtonProps) {
+export function FavoriteButton({ movieId, initialIsFavorite = false }: FavoriteButtonProps) {
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -21,7 +21,7 @@ export function FavoriteButton({ tmdbId, initialIsFavorite = false }: FavoriteBu
     
     try {
       if (isFavorite) {
-        const result = await removeFromFavorites(tmdbId);
+        const result = await removeFromFavorites(movieId);
         
         if (result.success) {
           toast.success('Removed from favorites');
@@ -30,7 +30,7 @@ export function FavoriteButton({ tmdbId, initialIsFavorite = false }: FavoriteBu
           toast.error(result.error || 'Failed to remove from favorites');
         }
       } else {
-        const result = await addToFavorites(tmdbId);
+        const result = await addToFavorites(movieId);
         
         if (result.success) {
           toast.success('Added to favorites');

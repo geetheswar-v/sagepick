@@ -16,7 +16,7 @@ import { getWatchlistStatusLabel, getWatchlistStatusColor } from '@/lib/utils/mo
 import type { UserWatchlist, WatchlistStatus } from '@/lib/types/movie';
 
 interface WatchlistButtonProps {
-  tmdbId: number;
+  movieId: number;
   initialStatus?: UserWatchlist | null;
 }
 
@@ -28,7 +28,7 @@ const watchlistStatuses: { value: WatchlistStatus; label: string }[] = [
   { value: 'DROPPED', label: 'Dropped' },
 ];
 
-export function WatchlistButton({ tmdbId, initialStatus }: WatchlistButtonProps) {
+export function WatchlistButton({ movieId, initialStatus }: WatchlistButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState(initialStatus);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,7 +37,7 @@ export function WatchlistButton({ tmdbId, initialStatus }: WatchlistButtonProps)
     setIsSubmitting(true);
     
     try {
-      const result = await addToWatchlist(tmdbId, newStatus);
+      const result = await addToWatchlist(movieId, newStatus);
       
       if (result.success) {
         toast.success(`Added to ${getWatchlistStatusLabel(newStatus)}`);
@@ -57,7 +57,7 @@ export function WatchlistButton({ tmdbId, initialStatus }: WatchlistButtonProps)
     setIsSubmitting(true);
     
     try {
-      const result = await removeFromWatchlist(tmdbId);
+      const result = await removeFromWatchlist(movieId);
       
       if (result.success) {
         toast.success('Removed from watchlist');

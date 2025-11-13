@@ -14,18 +14,18 @@ import type { Movie } from '@/lib/types/movie';
 interface HeroCarouselProps {
   movies: Movie[];
   isAuthenticated?: boolean;
-  favoriteTmdbIds?: Set<number>;
+  favoriteMovieIds?: Set<number>;
 }
 
 export function HeroCarousel({ 
   movies, 
   isAuthenticated = false,
-  favoriteTmdbIds = new Set()
+  favoriteMovieIds = new Set()
 }: HeroCarouselProps) {
   const [currentMovie, setCurrentMovie] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [favorites, setFavorites] = useState(favoriteTmdbIds);
+  const [favorites, setFavorites] = useState(favoriteMovieIds);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
@@ -37,17 +37,17 @@ export function HeroCarousel({
       return;
     }
     
-    const currentTmdbId = movies[currentMovie].tmdb_id;
+    const currentMovieId = movies[currentMovie].tmdb_id;
     setIsTogglingFavorite(true);
     
     try {
-      const result = await toggleFavorite(currentTmdbId);
+      const result = await toggleFavorite(currentMovieId);
       if (result.success) {
         const newFavorites = new Set(favorites);
-        if (favorites.has(currentTmdbId)) {
-          newFavorites.delete(currentTmdbId);
+        if (favorites.has(currentMovieId)) {
+          newFavorites.delete(currentMovieId);
         } else {
-          newFavorites.add(currentTmdbId);
+          newFavorites.add(currentMovieId);
         }
         setFavorites(newFavorites);
         toast.success(result.message || 'Favorite updated');
@@ -192,7 +192,7 @@ export function HeroCarousel({
       <div className="absolute inset-0 flex items-end md:items-center">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-24 md:pb-0">
           <div 
-            key={movie.tmdb_id} 
+            key={movie.id} 
             className={`max-w-xl sm:max-w-2xl space-y-2 sm:space-y-3 lg:space-y-6 transition-all duration-700 ease-in-out ${
               isTransitioning ? 'opacity-50 transform translate-y-2' : 'opacity-100 transform translate-y-0'
             }`}
@@ -231,7 +231,7 @@ export function HeroCarousel({
             {/* Action Buttons */}
             <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
               <Button asChild size="lg">
-                <Link href={`/movie/${movie.tmdb_id}`}>
+                <Link href={`/movie/${movie.id}`}>
                   <Info className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 mr-1 sm:mr-2" />
                   More Info
                 </Link>
@@ -248,10 +248,10 @@ export function HeroCarousel({
                   <Heart 
                     className={cn(
                       'h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 mr-1 sm:mr-2 transition-colors',
-                      favorites.has(movie.tmdb_id) && 'fill-red-500 text-red-500'
+                      favorites.has(movie.id) && 'fill-red-500 text-red-500'
                     )} 
                   />
-                  {favorites.has(movie.tmdb_id) ? 'Remove from Favorites' : 'Add to Favorites'}
+                  {favorites.has(movie.id) ? 'Remove from Favorites' : 'Add to Favorites'}
                 </Button>
               )}
             </div>

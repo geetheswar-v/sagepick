@@ -11,7 +11,7 @@ interface MovieCategoryCarouselProps {
   movies: Movie[];
   isLoading?: boolean;
   isAuthenticated?: boolean;
-  favoriteTmdbIds?: Set<number>;
+  favoriteMovieIds?: Set<number>;
 }
 
 export function MovieCategoryCarousel({ 
@@ -19,7 +19,7 @@ export function MovieCategoryCarousel({
   movies, 
   isLoading = false,
   isAuthenticated = false,
-  favoriteTmdbIds = new Set()
+  favoriteMovieIds = new Set()
 }: MovieCategoryCarouselProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -90,13 +90,13 @@ export function MovieCategoryCarousel({
           // Movie cards
           movies.map((movie) => (
             <div 
-              key={movie.tmdb_id} 
+              key={movie.id} 
               className="w-[150px] sm:w-[180px] md:w-[200px] flex-shrink-0 snap-start"
             >
               <MovieCard 
                 movie={movie}
                 isAuthenticated={isAuthenticated}
-                isFavorite={favoriteTmdbIds.has(movie.tmdb_id)}
+                isFavorite={favoriteMovieIds.has(movie.id)}
               />
             </div>
           ))

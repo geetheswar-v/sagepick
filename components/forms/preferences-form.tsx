@@ -32,9 +32,9 @@ const LANGUAGES = [
 ];
 
 const YEAR_RANGES: { value: ReleaseYearRange; label: string; description: string }[] = [
-  { value: "MODERN", label: "Modern", description: "2015 - Present" },
-  { value: "RECENT", label: "Recent", description: "2005 - 2014" },
-  { value: "CLASSIC", label: "Classic", description: "1990 - 2004" },
+  { value: "MODERN", label: "Modern", description: "2020 - Present" },
+  { value: "RECENT", label: "Recent", description: "2010 - 2019" },
+  { value: "CLASSIC", label: "Classic", description: "1990 - 2009" },
   { value: "RETRO", label: "Retro", description: "Before 1990" },
   { value: "ALL", label: "All Eras", description: "No preference" },
 ];

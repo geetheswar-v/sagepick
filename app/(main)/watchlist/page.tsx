@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getUserWatchlist } from '@/server/movie';
 import { hasCompletedOnboarding } from '@/server/user';
-import { getMovieByTmdbId } from '@/lib/services/movie-service';
+import { getMovieById } from '@/lib/services/movie-service';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MovieCard, MovieCardSkeleton } from '@/components/movie/movie-card';
 import type { WatchlistStatus } from '@/lib/types/movie';
@@ -29,7 +29,7 @@ async function WatchlistContent({ status }: { status?: WatchlistStatus }) {
   const movies = await Promise.all(
     watchlistResult.data.map(async (item) => {
       try {
-        return await getMovieByTmdbId(item.tmdbId);
+        return await getMovieById(item.movieId);
       } catch {
         return null;
       }
@@ -41,7 +41,7 @@ async function WatchlistContent({ status }: { status?: WatchlistStatus }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       {validMovies.map((movie) => (
-        <MovieCard key={movie.tmdb_id} movie={movie} />
+        <MovieCard key={movie.id} movie={movie} />
       ))}
     </div>
   );

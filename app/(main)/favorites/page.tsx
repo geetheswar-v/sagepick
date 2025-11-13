@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getUserFavorites } from '@/server/movie';
 import { hasCompletedOnboarding } from '@/server/user';
-import { getMovieByTmdbId } from '@/lib/services/movie-service';
+import { getMovieById } from '@/lib/services/movie-service';
 import { MovieCard, MovieCardSkeleton } from '@/components/movie/movie-card';
 import { Heart } from 'lucide-react';
 
@@ -29,7 +29,7 @@ async function FavoritesContent() {
   const movies = await Promise.all(
     favoritesResult.data.map(async (item) => {
       try {
-        return await getMovieByTmdbId(item.tmdbId);
+        return await getMovieById(item.movieId);
       } catch {
         return null;
       }
@@ -41,7 +41,7 @@ async function FavoritesContent() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       {validMovies.map((movie) => (
-        <MovieCard key={movie.tmdb_id} movie={movie} />
+        <MovieCard key={movie.id} movie={movie} />
       ))}
     </div>
   );

@@ -46,7 +46,7 @@ export function MovieCard({
     
     setIsLoading(true);
     try {
-      const result = await toggleFavorite(movie.tmdb_id);
+      const result = await toggleFavorite(movie.id);
       if (result.success) {
         setFavorite(!favorite);
         toast.success(favorite ? 'Removed from favorites' : 'Added to favorites');
@@ -61,7 +61,7 @@ export function MovieCard({
   };
 
   return (
-    <Link href={`/movie/${movie.tmdb_id}`}>
+    <Link href={`/movie/${movie.id}`}>
       <Card className={cn(
         'group overflow-hidden border-none bg-transparent transition-all duration-300 hover:scale-105',
         className

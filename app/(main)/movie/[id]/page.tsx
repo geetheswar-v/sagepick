@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Star } from 'lucide-react';
 import { headers } from 'next/headers';
-import { getMovieByTmdbId } from '@/lib/services/movie-service';
+import { getMovieById } from '@/lib/services/movie-service';
 import { getUserMovieData } from '@/server/movie';
 import { auth } from '@/lib/auth/auth';
 import { Badge } from '@/components/ui/badge';
@@ -27,9 +27,9 @@ interface MoviePageProps {
 
 export default async function MoviePage({ params }: MoviePageProps) {
   const { id } = await params;
-  const tmdbId = parseInt(id);
+  const movieId = parseInt(id);
 
-  if (isNaN(tmdbId)) {
+  if (isNaN(movieId)) {
     notFound();
   }
 
@@ -41,9 +41,9 @@ export default async function MoviePage({ params }: MoviePageProps) {
 
   // Fetch movie data and user data in parallel (only fetch user data if authenticated)
   const [movie, userData] = await Promise.all([
-    getMovieByTmdbId(tmdbId).catch(() => null),
+    getMovieById(movieId).catch(() => null),
     isAuthenticated 
-      ? getUserMovieData(tmdbId).catch(() => ({ 
+      ? getUserMovieData(movieId).catch(() => ({ 
           success: false, 
           data: { rating: null, watchlist: null, isFavorite: false } 
         }))
@@ -161,15 +161,15 @@ export default async function MoviePage({ params }: MoviePageProps) {
                   {isAuthenticated && (
                     <div className="flex flex-wrap items-center gap-3 pt-2">
                       <MovieRating 
-                        tmdbId={tmdbId}
+                        movieId={movieId}
                         initialRating={userData.data.rating}
                       />
                       <WatchlistButton 
-                        tmdbId={tmdbId}
+                        movieId={movieId}
                         initialStatus={userData.data.watchlist}
                       />
                       <FavoriteButton 
-                        tmdbId={tmdbId}
+                        movieId={movieId}
                         initialIsFavorite={userData.data.isFavorite}
                       />
                     </div>

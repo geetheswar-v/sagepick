@@ -87,17 +87,17 @@ model UserMovieRating {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // TMDB ID from Core Service
-  tmdbId Int
+  // Movie ID from Core Service (internal database ID, not TMDB ID)
+  movieId Int
 
   rating    Float // Rating from 0-10 (or 1-5, we can scale it)
   review    String?  @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, tmdbId])
+  @@unique([userId, movieId])
   @@index([userId])
-  @@index([tmdbId])
+  @@index([movieId])
   @@index([rating])
   @@map("user_movie_rating")
 }
@@ -107,8 +107,8 @@ model UserWatchlist {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // TMDB ID from Core Service
-  tmdbId Int
+  // Movie ID from Core Service (internal database ID, not TMDB ID)
+  movieId Int
 
   status    WatchlistStatus @default(PLAN_TO_WATCH)
   progress  Int? // For tracking episodes/rewatches
@@ -116,9 +116,9 @@ model UserWatchlist {
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 
-  @@unique([userId, tmdbId])
+  @@unique([userId, movieId])
   @@index([userId])
-  @@index([tmdbId])
+  @@index([movieId])
   @@index([status])
   @@index([userId, status])
   @@map("user_watchlist")
@@ -129,22 +129,22 @@ model UserFavorite {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // TMDB ID from Core Service
-  tmdbId Int
+  // Movie ID from Core Service (internal database ID, not TMDB ID)
+  movieId Int
 
   createdAt DateTime @default(now())
 
-  @@unique([userId, tmdbId])
+  @@unique([userId, movieId])
   @@index([userId])
-  @@index([tmdbId])
+  @@index([movieId])
   @@map("user_favorite")
 }
 
 // User Preferences for Cold Start Problem
 enum ReleaseYearRange {
-  MODERN // 2015-present
-  RECENT // 2005-2014
-  CLASSIC // 1990-2004
+  MODERN // 2020-present
+  RECENT // 2010-2019
+  CLASSIC // 1990-2009
   RETRO // Before 1990
   ALL // No preference
 }

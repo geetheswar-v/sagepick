@@ -22,7 +22,7 @@ async function getCurrentUser() {
 // ==================== RATINGS ====================
 
 export async function rateMovie(
-  tmdbId: number,
+  movieId: number,
   rating: number,
   review?: string
 ) {
@@ -36,9 +36,9 @@ export async function rateMovie(
 
     const userRating = await prisma.userMovieRating.upsert({
       where: {
-        userId_tmdbId: {
+        userId_movieId: {
           userId: user.id,
-          tmdbId,
+          movieId,
         },
       },
       update: {
@@ -48,13 +48,13 @@ export async function rateMovie(
       },
       create: {
         userId: user.id,
-        tmdbId,
+        movieId,
         rating,
         review: review || null,
       },
     });
 
-    revalidatePath(`/movie/${tmdbId}`);
+    revalidatePath(`/movie/${movieId}`);
     return { success: true, data: userRating };
   } catch (error) {
     console.error("Error rating movie:", error);
@@ -65,20 +65,20 @@ export async function rateMovie(
   }
 }
 
-export async function deleteRating(tmdbId: number) {
+export async function deleteRating(movieId: number) {
   try {
     const user = await getCurrentUser();
 
     await prisma.userMovieRating.delete({
       where: {
-        userId_tmdbId: {
+        userId_movieId: {
           userId: user.id,
-          tmdbId,
+          movieId,
         },
       },
     });
 
-    revalidatePath(`/movie/${tmdbId}`);
+    revalidatePath(`/movie/${movieId}`);
     return { success: true };
   } catch (error) {
     console.error("Error deleting rating:", error);
@@ -89,15 +89,15 @@ export async function deleteRating(tmdbId: number) {
   }
 }
 
-export async function getUserRating(tmdbId: number) {
+export async function getUserRating(movieId: number) {
   try {
     const user = await getCurrentUser();
 
     const rating = await prisma.userMovieRating.findUnique({
       where: {
-        userId_tmdbId: {
+        userId_movieId: {
           userId: user.id,
-          tmdbId,
+          movieId,
         },
       },
     });
@@ -127,7 +127,7 @@ export async function getUserRatings(userId?: string) {
 // ==================== WATCHLIST ====================
 
 export async function addToWatchlist(
-  tmdbId: number,
+  movieId: number,
   status: WatchlistStatus = "PLAN_TO_WATCH",
   notes?: string
 ) {
@@ -136,9 +136,9 @@ export async function addToWatchlist(
 
     const watchlistItem = await prisma.userWatchlist.upsert({
       where: {
-        userId_tmdbId: {
+        userId_movieId: {
           userId: user.id,
-          tmdbId,
+          movieId,
         },
       },
       update: {
@@ -148,13 +148,13 @@ export async function addToWatchlist(
       },
       create: {
         userId: user.id,
-        tmdbId,
+        movieId,
         status,
         notes: notes || null,
       },
     });
 
-    revalidatePath(`/movie/${tmdbId}`);
+    revalidatePath(`/movie/${movieId}`);
     revalidatePath("/watchlist");
     return { success: true, data: watchlistItem };
   } catch (error) {
@@ -168,7 +168,7 @@ export async function addToWatchlist(
 }
 
 export async function updateWatchlistStatus(
-  tmdbId: number,
+  movieId: number,
   status: WatchlistStatus,
   notes?: string
 ) {
@@ -177,9 +177,9 @@ export async function updateWatchlistStatus(
 
     const watchlistItem = await prisma.userWatchlist.update({
       where: {
-        userId_tmdbId: {
+        userId_movieId: {
           userId: user.id,
-          tmdbId,
+          movieId,
         },
       },
       data: {
@@ -189,7 +189,7 @@ export async function updateWatchlistStatus(
       },
     });
 
-    revalidatePath(`/movie/${tmdbId}`);
+    revalidatePath(`/movie/${movieId}`);
     revalidatePath("/watchlist");
     return { success: true, data: watchlistItem };
   } catch (error) {
@@ -202,20 +202,20 @@ export async function updateWatchlistStatus(
   }
 }
 
-export async function removeFromWatchlist(tmdbId: number) {
+export async function removeFromWatchlist(movieId: number) {
   try {
     const user = await getCurrentUser();
 
     await prisma.userWatchlist.delete({
       where: {
-        userId_tmdbId: {
+        userId_movieId: {
           userId: user.id,
-          tmdbId,
+          movieId,
         },
       },
     });
 
-    revalidatePath(`/movie/${tmdbId}`);
+    revalidatePath(`/movie/${movieId}`);
     revalidatePath("/watchlist");
     return { success: true };
   } catch (error) {
@@ -230,15 +230,15 @@ export async function removeFromWatchlist(tmdbId: number) {
   }
 }
 
-export async function getWatchlistItem(tmdbId: number) {
+export async function getWatchlistItem(movieId: number) {
   try {
     const user = await getCurrentUser();
 
     const item = await prisma.userWatchlist.findUnique({
       where: {
-        userId_tmdbId: {
+        userId_movieId: {
           userId: user.id,
-          tmdbId,
+          movieId,
         },
       },
     });
@@ -273,18 +273,18 @@ export async function getUserWatchlist(
 
 // ==================== FAVORITES ====================
 
-export async function addToFavorites(tmdbId: number) {
+export async function addToFavorites(movieId: number) {
   try {
     const user = await getCurrentUser();
 
     const favorite = await prisma.userFavorite.create({
       data: {
         userId: user.id,
-        tmdbId,
+        movieId,
       },
     });
 
-    revalidatePath(`/movie/${tmdbId}`);
+    revalidatePath(`/movie/${movieId}`);
     revalidatePath("/favorites");
     return { success: true, data: favorite };
   } catch (error) {
@@ -302,20 +302,20 @@ export async function addToFavorites(tmdbId: number) {
   }
 }
 
-export async function removeFromFavorites(tmdbId: number) {
+export async function removeFromFavorites(movieId: number) {
   try {
     const user = await getCurrentUser();
 
     await prisma.userFavorite.delete({
       where: {
-        userId_tmdbId: {
+        userId_movieId: {
           userId: user.id,
-          tmdbId,
+          movieId,
         },
       },
     });
 
-    revalidatePath(`/movie/${tmdbId}`);
+    revalidatePath(`/movie/${movieId}`);
     revalidatePath("/favorites");
     return { success: true };
   } catch (error) {
@@ -330,15 +330,15 @@ export async function removeFromFavorites(tmdbId: number) {
   }
 }
 
-export async function isFavorite(tmdbId: number) {
+export async function isFavorite(movieId: number) {
   try {
     const user = await getCurrentUser();
 
     const favorite = await prisma.userFavorite.findUnique({
       where: {
-        userId_tmdbId: {
+        userId_movieId: {
           userId: user.id,
-          tmdbId,
+          movieId,
         },
       },
     });
@@ -349,15 +349,15 @@ export async function isFavorite(tmdbId: number) {
   }
 }
 
-export async function toggleFavorite(tmdbId: number) {
+export async function toggleFavorite(movieId: number) {
   try {
     const user = await getCurrentUser();
 
     const existing = await prisma.userFavorite.findUnique({
       where: {
-        userId_tmdbId: {
+        userId_movieId: {
           userId: user.id,
-          tmdbId,
+          movieId,
         },
       },
     });
@@ -365,9 +365,9 @@ export async function toggleFavorite(tmdbId: number) {
     if (existing) {
       await prisma.userFavorite.delete({
         where: {
-          userId_tmdbId: {
+          userId_movieId: {
             userId: user.id,
-            tmdbId,
+            movieId,
           },
         },
       });
@@ -380,7 +380,7 @@ export async function toggleFavorite(tmdbId: number) {
       await prisma.userFavorite.create({
         data: {
           userId: user.id,
-          tmdbId,
+          movieId,
         },
       });
       return { success: true, message: "Added to favorites", isFavorite: true };
@@ -409,19 +409,19 @@ export async function getUserFavorites(userId?: string) {
 
 // ==================== COMBINED DATA ====================
 
-export async function getUserMovieData(tmdbId: number) {
+export async function getUserMovieData(movieId: number) {
   try {
     const user = await getCurrentUser();
 
     const [rating, watchlist, favorite] = await Promise.all([
       prisma.userMovieRating.findUnique({
-        where: { userId_tmdbId: { userId: user.id, tmdbId } },
+        where: { userId_movieId: { userId: user.id, movieId } },
       }),
       prisma.userWatchlist.findUnique({
-        where: { userId_tmdbId: { userId: user.id, tmdbId } },
+        where: { userId_movieId: { userId: user.id, movieId } },
       }),
       prisma.userFavorite.findUnique({
-        where: { userId_tmdbId: { userId: user.id, tmdbId } },
+        where: { userId_movieId: { userId: user.id, movieId } },
       }),
     ]);
 
