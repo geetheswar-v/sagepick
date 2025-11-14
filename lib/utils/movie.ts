@@ -65,7 +65,7 @@ export function formatReleaseDate(dateString?: string): string {
 /**
  * Get year from release date
  */
-export function getYear(dateString?: string): string {
+export function getYear(dateString?: string | null): string {
   if (!dateString) return "TBA";
   return new Date(dateString).getFullYear().toString();
 }

@@ -43,7 +43,7 @@ export function MovieRating({ movieId, initialRating }: MovieRatingProps) {
       } else {
         toast.error(result.error || 'Failed to submit rating');
       }
-    } catch (error) {
+    } catch {
       toast.error('An error occurred while submitting your rating');
     } finally {
       setIsSubmitting(false);
@@ -65,7 +65,7 @@ export function MovieRating({ movieId, initialRating }: MovieRatingProps) {
       } else {
         toast.error(result.error || 'Failed to remove rating');
       }
-    } catch (error) {
+    } catch {
       toast.error('An error occurred while removing your rating');
     } finally {
       setIsSubmitting(false);
