@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "../prisma";
 import { nextCookies } from "better-auth/next-js";
 import { sendEmail } from "../email";
+import bcrypt from "bcryptjs";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "SagePick";
 
@@ -17,6 +18,30 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
     minPasswordLength: 8,
+    password: {
+      // Use bcrypt for password hashing (for seed compatibility)
+      hash: async (password: string) => {
+        return await bcrypt.hash(password, 10);
+      },
+      verify: async ({
+        hash,
+        password,
+      }: {
+        hash: string;
+        password: string;
+      }) => {
+        if (!hash) return false;
+        // Support both bcrypt ($2a/$2b) and scrypt hashes
+        if (hash.startsWith("$2a$") || hash.startsWith("$2b$")) {
+          try {
+            return await bcrypt.compare(password, hash);
+          } catch {
+            return false;
+          }
+        }
+        return false;
+      },
+    },
     sendResetPassword: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
