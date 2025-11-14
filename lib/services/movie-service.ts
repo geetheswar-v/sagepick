@@ -15,6 +15,22 @@ const CORE_SERVICE_URL =
 const BEARER_TOKEN = process.env.CORE_SERVICE_BEARER_TOKEN || "";
 
 const API_BASE = `${CORE_SERVICE_URL}/api/v1`;
+const isServer = typeof window === "undefined";
+
+async function fetchFromProxy<T>(path: string): Promise<T> {
+  const response = await fetch(path, {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Proxy API Error: ${response.status} - ${response.statusText}`
+    );
+  }
+
+  return response.json();
+}
 
 // Fetch wrapper with auth
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
@@ -128,8 +144,15 @@ export async function searchMovies(
     }
   });
 
-  const url = `${API_BASE}/search?${queryParams.toString()}`;
-  return fetchWithAuth(url);
+  const queryString = queryParams.toString();
+
+  if (isServer) {
+    const url = `${API_BASE}/search${queryString ? `?${queryString}` : ""}`;
+    return fetchWithAuth(url);
+  }
+
+  const proxyUrl = `/api/search${queryString ? `?${queryString}` : ""}`;
+  return fetchFromProxy<MoviesResponse>(proxyUrl);
 }
 
 /**
@@ -146,8 +169,17 @@ export async function searchMoviesTMDB(
     }
   });
 
-  const url = `${API_BASE}/search/tmdb?${queryParams.toString()}`;
-  return fetchWithAuth(url);
+  const queryString = queryParams.toString();
+
+  if (isServer) {
+    const url = `${API_BASE}/search/tmdb${
+      queryString ? `?${queryString}` : ""
+    }`;
+    return fetchWithAuth(url);
+  }
+
+  const proxyUrl = `/api/search/tmdb${queryString ? `?${queryString}` : ""}`;
+  return fetchFromProxy<MoviesResponse>(proxyUrl);
 }
 
 // ===========================================
