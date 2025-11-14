@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String            @id
+  name          String
+  email         String
+  emailVerified Boolean           @default(false)
+  image         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @default(now()) @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  ratings       UserMovieRating[]
+  watchlists    UserWatchlist[]
+  favorites     UserFavorite[]
+  preference    UserPreference?
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
+
+// User-Movie Relationship Models
+// Movie data is stored in Core Service, we only store relationships
+
+enum WatchlistStatus {
+  PLAN_TO_WATCH
+  WATCHING
+  COMPLETED
+  ON_HOLD
+  DROPPED
+}
+
+model UserMovieRating {
+  id     Int    @id @default(autoincrement())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Movie ID from Core Service (internal database ID, not TMDB ID)
+  movieId Int
+
+  rating    Float // Rating from 0-10 (or 1-5, we can scale it)
+  review    String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, movieId])
+  @@index([userId])
+  @@index([movieId])
+  @@index([rating])
+  @@map("user_movie_rating")
+}
+
+model UserWatchlist {
+  id     Int    @id @default(autoincrement())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Movie ID from Core Service (internal database ID, not TMDB ID)
+  movieId Int
+
+  status    WatchlistStatus @default(PLAN_TO_WATCH)
+  progress  Int? // For tracking episodes/rewatches
+  notes     String?         @db.Text
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@unique([userId, movieId])
+  @@index([userId])
+  @@index([movieId])
+  @@index([status])
+  @@index([userId, status])
+  @@map("user_watchlist")
+}
+
+model UserFavorite {
+  id     Int    @id @default(autoincrement())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Movie ID from Core Service (internal database ID, not TMDB ID)
+  movieId Int
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, movieId])
+  @@index([userId])
+  @@index([movieId])
+  @@map("user_favorite")
+}
+
+// User Preferences for Cold Start Problem
+enum ReleaseYearRange {
+  MODERN // 2020-present
+  RECENT // 2010-2019
+  CLASSIC // 1990-2009
+  RETRO // Before 1990
+  ALL // No preference
+}
+
+model UserPreference {
+  id     Int    @id @default(autoincrement())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Core preferences
+  genreIds          Int[] // Array of genre IDs from Core Service
+  languages         String[] // ISO language codes: ['en', 'hi', 'te', 'es']
+  releaseYearRanges ReleaseYearRange[] // Multiple ranges can be selected
+
+  // Optional preferences
+  keywords String[] // Free-form tags/themes (e.g., "superhero", "space", "time-travel")
+
+  // Metadata
+  completedOnboarding Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([userId])
+  @@map("user_preference")
+}
